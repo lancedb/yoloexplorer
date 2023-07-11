@@ -1,0 +1,3 @@
+lancedb
+duckdb
+ultralytics @git+https://github.com/ultralytics/ultralytics.git@embeddings

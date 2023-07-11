@@ -5,5 +5,5 @@ run/
 __pycache__/
 .ipynb_checkpoints/
 *_updated.yaml
-*.txt
+*_updated.txt
 .DS_Store
