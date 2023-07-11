@@ -74,10 +74,18 @@ coco_exp.plot_similar_imgs(query="WHERE labels LIKE '%motorbike%'")
 
 <details>
 <summary> <b>Plotting</b></summary>
-Here are the supported visualization methods for different stages of analysis.
-* `plot_imgs(ids, query, n=10)` - To plot the given `ids` or the result of the SQL query. One of the 2 must be provided. 
-* `plot_similar_imgs(img/idx, n=10)` - To plot `n` top similar images to the given img. Accepts img idx from the dataset, Path to imgs or encoded/binary img
-* `plot_similarity_index(top_k=0.01, sim_thres=0.90, reduce=False, sorted=False)` - To plot the similarity index of the dataset. This gives measure of how similar an img is when compared to all the imgs of the dataset. (Working with similarity index is covered in detail in the Advanced section)
+| Visualization Method | Description | Arguments |
+|---|---|---|
+| `plot_imgs(ids, query, n=10)` | Plots the given `ids` or the result of the SQL query. One of the 2 must be provided. | `ids`: A list of image IDs or a SQL query. `n`: The number of images to plot. |
+| `plot_similar_imgs(img/idx, n=10)` | Plots `n` top similar images to the given img. Accepts img idx from the dataset, Path to imgs or encoded/binary img | `img/idx`: The image to plot similar images for. `n`: The number of similar images to plot. |
+| `plot_similarity_index(top_k=0.01, sim_thres=0.90, reduce=False, sorted=False)` | Plots the similarity index of the dataset. This gives measure of how similar an img is when compared to all the imgs of the dataset. | `top_k`: The percentage of images to keep for the similarity index. `sim_thres`: The similarity threshold. `reduce`: Whether to reduce the dimensionality of the similarity index. `sorted`: Whether to sort the similarity index. |
+
+**Additional Details**
+
+* The `plot_imgs` method can be used to visualize a subset of images from the dataset. The `ids` argument can be a list of image IDs, or a SQL query that returns a list of image IDs. The `n` argument specifies the number of images to plot.
+* The `plot_similar_imgs` method can be used to visualize the top `n` similar images to a given image. The `img/idx` argument can be the index of the image in the dataset, the path to the image file, or the encoded/binary representation of the image.
+* The `plot_similarity_index` method can be used to visualize the similarity index of the dataset. The similarity index is a measure of how similar each image is to all the other images in the dataset. The `top_k` argument specifies the percentage of images to keep for the similarity index. The `sim_thres` argument specifies the similarity threshold. The `reduce` argument specifies whether to reduce the dimensionality of the similarity index. The `sorted` argument specifies whether to sort the similarity index.
+
 
 </details>
 
