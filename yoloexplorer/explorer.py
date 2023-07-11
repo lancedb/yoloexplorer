@@ -64,7 +64,7 @@ class Explorer:
         self._sim_index = None
         self.version = None 
 
-        self.table_name = data if data is not None else Path(table).stem  # Keep the table name when copying
+        self.table_name = data 
         self.temp_table_name = self.table_name + '_temp'
 
         # copy table to project if table is provided
@@ -252,6 +252,7 @@ class Explorer:
         # create a new table with reduced dimensionality to speedup the search
         self._search_table = self.table
         if reduce:
+            dim = min(256, embs.shape[1]) # TODO: make this configurable
             pca = PCA(n_components=min(dim, len(embs)))
             embs = pca.fit_transform(embs)
             dim = embs.shape[1]
