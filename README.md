@@ -1,4 +1,5 @@
 # YOLOExplorer
+
 Explore, manipulate and iterate on Computer Vision datasets with precision using simple APIs. 
 Supports SQL filters, vector similarity search, native interface with Pandas and more.
 
@@ -66,4 +67,15 @@ coco_exp.get_similar_imgs(..., query="WHERE labels LIKE '%motorbike%'")
 coco_exp.plot_similar_imgs(query="WHERE labels LIKE '%motorbike%'")
 ```
 
+**Plotting**
+**Add, remove, persist new Datasets and start training!**
+**(Advanced querying)Getting insights from Similarity index**
+
+TODOs before release
+- [ ]  Register Pypi
+- [ ] Add more tests
+- [ ] Write basic README
+- [x] Write intro notebooks
+- [ ] Warn/throw when mixing OOD data
+- [ ] Move hacky code outside the main API file
 
