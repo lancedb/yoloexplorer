@@ -473,7 +473,7 @@ class Explorer:
             LOGGER.info("No table found. Please provide a dataset to work on.")
             return
 
-        table = self.table.to_arrow() # noqa
+        table = self.table.to_arrow()  # noqa
         result = duckdb.sql(query).to_df()
 
         return result
