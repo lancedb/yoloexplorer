@@ -69,8 +69,16 @@ coco_exp.plot_similar_imgs(query="WHERE labels LIKE '%motorbike%'")
 ```
 
 **Plotting**
+
+TODO
+
 **Add, remove, persist new Datasets and start training!**
+
+TODO
+
 **(Advanced querying)Getting insights from Similarity index**
+
+TODO
 
 TODOs before release
 - [ ]  Register Pypi
