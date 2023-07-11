@@ -84,7 +84,7 @@ coco_exp.plot_similar_imgs(query="WHERE labels LIKE '%motorbike%'")
 
 * The `plot_imgs` method can be used to visualize a subset of images from the dataset. The `ids` argument can be a list of image IDs, or a SQL query that returns a list of image IDs. The `n` argument specifies the number of images to plot.
 * The `plot_similar_imgs` method can be used to visualize the top `n` similar images to a given image. The `img/idx` argument can be the index of the image in the dataset, the path to the image file, or the encoded/binary representation of the image.
-* The `plot_similarity_index` method can be used to visualize the similarity index of the dataset. The similarity index is a measure of how similar each image is to all the other images in the dataset. The `top_k` argument specifies the percentage of images to keep for the similarity index. The `sim_thres` argument specifies the similarity threshold. The `reduce` argument specifies whether to reduce the dimensionality of the similarity index. The `sorted` argument specifies whether to sort the similarity index.
+* The `plot_similarity_index` method can be used to visualize the similarity index of the dataset. The similarity index is a measure of how similar each image is to all the other images in the dataset. The `top_k` argument specifies the percentage of images to keep for the similarity index. The `sim_thres` argument specifies the similarity threshold. The `reduce` argument specifies whether to reduce the dimensionality of embeddings before calculating the index. The `sorted` argument specifies whether to sort the similarity index.
 
 
 </details>
@@ -121,16 +121,19 @@ coco_exp.reset()
 </details>
 
 <details>
-<summary>(Advanced querying)Getting insights from Similarity index</summary>
+<summary><b>(Advanced querying)Getting insights from Similarity index</b></summary>
 
 </details>
-TODO
+
 
 TODOs before release
-- [ ]  Register Pypi
+- [ ] Register Pypi
 - [x] Add more tests
 - [x] Write basic README
 - [x] Write intro notebooks
+- [ ] Make images show labels
+- [ ] (Temp)Make ids === idx for the table. Reset the 'id' column to row number on every deletion/addition
+Can wait
 - [ ] Warn/throw when mixing OOD data
 - [ ] Move hacky code outside the main API file
 
