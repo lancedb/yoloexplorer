@@ -319,7 +319,7 @@ class Explorer:
 
         return self._sim_index if not sorted else np.sort(self._sim_index)
 
-    def plot_similirity_index(
+    def plot_similarity_index(
         self, sim_thres=0.90, top_k=0.01, reduce=False, sorted=False
     ):
         """
