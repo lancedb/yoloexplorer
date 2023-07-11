@@ -46,6 +46,7 @@ The above is equivlant to plotting directly with a query:
 voc_exp.plot_imgs(query=query, n=4)
 ```
 **Querying by similarity**
+
 Now lets say your model confuses between cetain classes( cat & dog for example) so you want to look find images similar to the ones above to investigate.
 
 The id of the first image in this case was 117
@@ -53,7 +54,7 @@ The id of the first image in this case was 117
 imgs, ids = coco_exp.get_similar_imgs(117, n=6) # accepts ids/idx, Path, or img blob
 voc_exp.plot_imgs(ids)
 ```
-![Similar Imgs](./yoloexplorer/assets/docs/sim_plotting.png, "Result")
+![Similar Imgs](./yoloexplorer/assets/docs/sim_plotting.png "Result")
 The above is equivlant to directly calling `plot_similar_imgs`
 ```python
 voc_exp.plot_similar_imgs(117, n=6)
