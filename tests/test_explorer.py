@@ -1,42 +1,54 @@
-import pytest
-
 from yoloexplorer import Explorer
-import lancedb
-import sklearn
-
 
 
 class TestExplorer:
-
     def test_embeddings_creation(self):
-        ds = Explorer('coco8.yaml')
-        ds.build_embeddings(force=True)
-        assert ds.table_name == 'coco8.yaml', 'the table name should be coco8.yaml'
-        assert len(ds.table.to_arrow()) == 4, 'the length of the embeddings table should be 8'
+        coco_exp = Explorer('coco8.yaml')
+        coco_exp.build_embeddings(force=True)
+        assert coco_exp.table_name == 'coco8.yaml', 'the table name should be coco8.yaml'
+        assert len(coco_exp.table) == 4, 'the length of the embeddings table should be 8'
 
     def test_sim_idx(self):
-        ds = Explorer('coco8.yaml')
-        ds.build_embeddings()
+        coco_exp = Explorer('coco8.yaml')
+        coco_exp.build_embeddings()
 
-        idx = ds.get_similarity_index(0, 1)  # get all imgs
+        idx = coco_exp.get_similarity_index(0, 1)  # get all imgs
         assert len(idx) == 4, 'the length of the similar index should be 8'
 
     def test_operations(self):
-        ds = Explorer('coco8.yaml')
-        ds.build_embeddings('yolov8n.pt')
+        coco_exp = Explorer('coco8.yaml')
+        coco_exp.build_embeddings('yolov8n.pt')
 
-        sim = ds.get_similarity_index()
+        sim = coco_exp.get_similarity_index()
         assert sim.shape[0] == 4, 'the length of the embeddings table should be 1'
 
-        _, ids = ds.get_similar_imgs(3, 10)
-        ds.remove_imgs(ids[0])
-        ds.reset()
-        ds.log_status()
-        ds.remove_imgs([0, 1])
-        ds.remove_imgs([0])
-        assert len(ds.table.to_arrow()) == 1, 'the length of the embeddings table should be 1'
-        ds.persist()
-        assert len(ds.table.to_arrow()) == 1, 'the length of the embeddings table should be 1'
+        _, ids = coco_exp.get_similar_imgs(3, 10)
+        coco_exp.remove_imgs(ids[0])
+        coco_exp.reset()
+        coco_exp.log_status()
+        coco_exp.remove_imgs([0, 1])
+        coco_exp.remove_imgs([0])
+        assert len(coco_exp.table.to_arrow()) == 1, 'the length of the embeddings table should be 1'
+        coco_exp.persist()
+        assert len(coco_exp.table.to_arrow()) == 1, 'the length of the embeddings table should be 1'
+    
+    def test_add_imgs(self):
+
+        coco_exp = Explorer('coco8.yaml')
+        coco_exp.build_embeddings()
+        coco128_exp = Explorer('coco128.yaml')
+        coco128_exp.build_embeddings()
+
+        coco_exp.add_imgs(coco128_exp, [i for i in range(4)])
+        assert len(coco_exp.table) == 8, 'the length of the embeddings table should be 8'
+
+    def test_sql(self):
+        coco_exp = Explorer('coco8.yaml')
+        coco_exp.build_embeddings()
+        result = coco_exp.sql("SELECT id FROM 'table' LIMIT 2")
+
+        assert result["id"].to_list() == [0,1], f'the result of the sql query should be [0,1] found {result["id"].to_list}'
+
     '''
     # Not supported yet
     def test_copy_embeddings_from_table(self):
