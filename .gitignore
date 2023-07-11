@@ -4,6 +4,6 @@ run/
 *.pt 
 __pycache__/
 .ipynb_checkpoints/
-*.yaml
-*.txt
+*_updated.yaml
+*_updated.txt
 .DS_Store
