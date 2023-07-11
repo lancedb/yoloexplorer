@@ -1,12 +1,11 @@
-
 import torch.nn.functional as F
 
 from ultralytics.yolo.utils import ops, LOGGER
 from ultralytics.yolo.utils.torch_utils import smart_inference_mode
 from ultralytics.yolo.v8.detect.predict import DetectionPredictor
 
-class YOLOEmbeddingsPredictor(DetectionPredictor):
 
+class YOLOEmbeddingsPredictor(DetectionPredictor):
     def postprocess(self, preds, img, orig_imgs):
         embedding = preds[1]
         embedding = F.adaptive_avg_pool2d(embedding, 2).flatten(1)
@@ -23,10 +22,21 @@ class YOLOEmbeddingsPredictor(DetectionPredictor):
 
         # Warmup model
         if not self.done_warmup:
-            self.model.warmup(imgsz=(1 if self.model.pt or self.model.triton else self.dataset.bs, 3, *self.imgsz))
+            self.model.warmup(
+                imgsz=(
+                    1 if self.model.pt or self.model.triton else self.dataset.bs,
+                    3,
+                    *self.imgsz,
+                )
+            )
             self.done_warmup = True
 
-        self.seen, self.windows, self.batch, profilers = 0, [], None, (ops.Profile(), ops.Profile(), ops.Profile())
+        self.seen, self.windows, self.batch, profilers = (
+            0,
+            [],
+            None,
+            (ops.Profile(), ops.Profile(), ops.Profile()),
+        )
         for batch in self.dataset:
             path, im0s, _, _ = batch
             if verbose:

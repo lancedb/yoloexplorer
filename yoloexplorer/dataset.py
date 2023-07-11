@@ -4,13 +4,15 @@ import numpy as np
 
 from ultralytics.yolo.data.dataset import YOLODataset
 from ultralytics.yolo.data.augment import Format
-from ultralytics.yolo.data.utils import IMG_FORMATS, check_det_dataset
+from ultralytics.yolo.data.utils import check_det_dataset
 
-def get_dataset_info(data='coco128.yaml', task='detect'):
+
+def get_dataset_info(data="coco128.yaml", task="detect"):
     # TODO: handle other tasks
     data = check_det_dataset(data)
 
     return data
+
 
 def get_relative_path(path1, path2):
     """Gets the relative path of `path1` to `path2`.
@@ -25,12 +27,14 @@ def get_relative_path(path1, path2):
 
     relative_path = os.path.relpath(path1, os.path.dirname(path2))
 
-
     return relative_path
+
 
 class Dataset(YOLODataset):
     def __init__(self, *args, data=None, **kwargs):
-        super().__init__(*args, data=data, use_segments=False, use_keypoints=False, **kwargs)
+        super().__init__(
+            *args, data=data, use_segments=False, use_keypoints=False, **kwargs
+        )
 
     # NOTE: Load the image directly without any resize operations.
     def load_image(self, i):
