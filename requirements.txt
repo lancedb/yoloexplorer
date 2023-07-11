@@ -1,4 +1,4 @@
 lancedb
 duckdb
-sklearn
+scikit-learn
 ultralytics @git+https://github.com/ultralytics/ultralytics.git@embeddings
