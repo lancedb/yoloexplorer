@@ -18,7 +18,7 @@ import pyarrow as pa
 from lancedb.embeddings import with_embeddings
 from sklearn.decomposition import PCA
 
-from yoloexplorer.dataset import get_dataset_info, get_relative_path, Dataset
+from yoloexplorer.dataset import get_dataset_info, Dataset
 from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
 
 SCHEMA = [
@@ -473,7 +473,7 @@ class Explorer:
             LOGGER.info("No table found. Please provide a dataset to work on.")
             return
 
-        table = self.table.to_arrow()
+        table = self.table.to_arrow() # noqa
         result = duckdb.sql(query).to_df()
 
         return result
