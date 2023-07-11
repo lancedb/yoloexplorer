@@ -258,7 +258,7 @@ class Explorer:
 
         Args:
             sim_thres (float, optional): Similarity threshold to set the minimum similarity. Defaults to 0.9.
-            top_k (float, optional): Top k fraction of the similar embeddings to apply the threshold on. Defaults to 0.1.
+            top_k (float, optional): Top k fraction of the similar embeddings to apply the threshold on. Default 0.1.
             dim (int, optional): Dimension of the reduced embedding space. Defaults to 256.
             sorted (bool, optional): Sort the embeddings by similarity. Defaults to False.
         Returns:
@@ -327,7 +327,7 @@ class Explorer:
 
         Args:
             threshold (float, optional): Similarity threshold to set the minimum similarity. Defaults to 0.9.
-            top_k (float, optional): Top k fraction of the similar embeddings to apply the threshold on. Defaults to 0.1.
+            top_k (float, optional): Top k fraction of the similar embeddings to apply the threshold on. Default 0.1.
             dim (int, optional): Dimension of the reduced embedding space. Defaults to 256.
             sorted (bool, optional): Whether to sort the index or not. Defaults to False.
         """
@@ -447,7 +447,7 @@ class Explorer:
             new_dataset_info, open(path / datafile_name, "w")
         )  # update dataset.yaml file
 
-        # TODO: not sure if this should be called data_final to prevent overwriting the original data? Creating embs for large datasets is expensive
+        # TODO: not sure if this should be called data_final to prevent overwriting the original data?
         self.table = self._create_table(
             self.table_name, data=self.table.to_arrow(), mode="overwrite"
         )
