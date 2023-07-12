@@ -548,4 +548,4 @@ if __name__ == "__main__":
     voc_table = Explorer("coco128.yaml")
     voc_table.build_embeddings(force=True)
     voc_table.remove_imgs([7,10,11,12,13,14,15,16,17,18,19,20,21,22,23])
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
