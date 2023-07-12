@@ -149,25 +149,33 @@ Now you can combine the similarity index with other querying options discussed a
 
 "Let's say you've created a list of candidates you wish to remove from the dataset. Now, you want to filter out the images that have similarity index less than 250, i.e, remove the images that are 90%(`sim_thres`) or more similar to more than 250 images in the dataset.
 "
-```
+```python
 ids = [...] # filtered ids list
 filter = np.where(sim > 250)
 final_ids = np.intersect1d(ids, filter) # intersect both arrays
 
 exp.remove_imgs(final_ids)
-```python
+```
 </details>
 
+<h3>Coming Soon</h3>
 
-TODOs before release
-- [x] Register Pypi
-- [x] Add more tests
-- [x] Write basic README
-- [x] Write intro notebooks
-- [x] Make images show labels
-- [x] (Temp)Make ids === idx for the table. Reset the 'id' column to row number on every deletion/addition
+<b>Pre-filtering</b>
+* To allow adding filter to searches.
+* Have a finer control over embeddings search space
 
-Future TODOs
-- [ ] Warn/throw when mixing OOD data
-- [ ] Move hacky code outside the main API file
+Pre-filtering will enable powerful queries like - "Show me images similar to <IMAGE> and include only ones that contain one or more(or exactly one) person, 2 cars and 1 horse" <br/>
+
+* <b>Automatically find potential duplicate images</b>
+
+* <b>Better embedding plotting and analytics insights </b>
+
+* <b>Better dashboard for visualizing imgs </b>
+</br>
+
+Notes:
+* The API will have some minor changes going from dev to minor release
+* For all practical purposes the ids are same as row number and is reset after every addition or removal
+
+
 
