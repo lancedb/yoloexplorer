@@ -128,12 +128,13 @@ coco_exp.reset()
 
 
 TODOs before release
-- [ ] Register Pypi
+- [x] Register Pypi
 - [x] Add more tests
 - [x] Write basic README
 - [x] Write intro notebooks
-- [ ] Make images show labels
-- [ ] (Temp)Make ids === idx for the table. Reset the 'id' column to row number on every deletion/addition
+- [x] Make images show labels
+- [x] (Temp)Make ids === idx for the table. Reset the 'id' column to row number on every deletion/addition
+
 Can wait
 - [ ] Warn/throw when mixing OOD data
 - [ ] Move hacky code outside the main API file
