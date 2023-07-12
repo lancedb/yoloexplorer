@@ -1,5 +1,6 @@
 from pathlib import Path
 from collections import defaultdict
+import math
 
 import pandas as pd
 import cv2
@@ -20,6 +21,7 @@ from sklearn.decomposition import PCA
 
 from yoloexplorer.dataset import get_dataset_info, Dataset
 from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
+
 
 SCHEMA = [
     "id",
@@ -218,7 +220,7 @@ class Explorer:
         _, ids = self.get_similar_imgs(img, n)
         self.plot_imgs(ids, n=n)
 
-    def plot_imgs(self, ids=None, query=None, n=10, labels=True):
+    def plot_imgs(self, ids=None, query=None, labels=True):
         if ids is None and query is None:
             ValueError("ids or query must be provided")
 
@@ -229,8 +231,6 @@ class Explorer:
             if query
             else self.table.to_pandas().iloc[ids]
         )
-        if n < len(df):
-            df = df[0:n]
         for _, row in df.iterrows():
             img = decode(row["img"])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -242,13 +242,22 @@ class Explorer:
                 img = ann.result()
             resized_images.append(img)
 
+        if not resized_images:
+            LOGGER.error("No images found")
+            return
         # Create a grid of the images
-        fig, axes = plt.subplots(nrows=len(resized_images) // 2, ncols=2)
+
+        cols = 10 if len(resized_images) > 10 else max(2,len(resized_images))
+        rows = max(1, math.ceil(len(resized_images) / cols))
+        fig, axes = plt.subplots(nrows=rows, ncols=cols)
+        fig.subplots_adjust(hspace=0, wspace=0)
         for i, ax in enumerate(axes.ravel()):
-            ax.imshow(resized_images[i])
+            if i < len(resized_images):
+                ax.imshow(resized_images[i])
             ax.axis("off")
         # Display the grid of images
         plt.show()
+    
 
     def get_similarity_index(
         self, top_k=0.01, sim_thres=0.90, reduce=False, sorted=False
@@ -542,10 +551,3 @@ class Explorer:
     def create_index(self):
         # TODO: create index
         pass
-
-
-if __name__ == "__main__":
-    voc_table = Explorer("coco128.yaml")
-    voc_table.build_embeddings(force=True)
-    voc_table.remove_imgs([7,10,11,12,13,14,15,16,17,18,19,20,21,22,23])
-    # import pdb;pdb.set_trace()
