@@ -11,7 +11,7 @@ Supports SQL filters, vector similarity search, native interface with Pandas and
 
 Try an example colab <a href="https://colab.research.google.com/github/lancedb/yoloexplorer/blob/main/examples/intro.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 
-<img src="./yoloexplorer/assets/docs/intro.gif" height=65% width=60% />
+<img src="./yoloexplorer/assets/docs/intro.gif" height=90% width=90% />
 
 ### Installation
 ```
