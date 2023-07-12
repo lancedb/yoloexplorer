@@ -21,8 +21,7 @@ from sklearn.decomposition import PCA
 
 from yoloexplorer.dataset import get_dataset_info, Dataset
 from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
-import plotly.subplots as sp
-import plotly.graph_objects as go
+
 
 SCHEMA = [
     "id",
@@ -552,10 +551,3 @@ class Explorer:
     def create_index(self):
         # TODO: create index
         pass
-
-
-if __name__ == "__main__":
-    voc_table = Explorer("coco128.yaml")
-    voc_table.build_embeddings()
-    voc_table.plot_imgs([i for i in range(40)])
-    import pdb;pdb.set_trace()
