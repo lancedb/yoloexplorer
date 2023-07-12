@@ -3,7 +3,7 @@
 Explore, manipulate and iterate on Computer Vision datasets with precision using simple APIs. 
 Supports SQL filters, vector similarity search, native interface with Pandas and more.
 
-### Installation (TODO: Relase on pypi)
+### Installation
 ```
 pip install yoloexplorer
 ```
