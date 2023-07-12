@@ -15,12 +15,9 @@ Try an example colab <a href="https://colab.research.google.com/github/lancedb/y
 
 ### Installation
 ```
-pip install yoloexplorer
+pip install git+https://github.com/lancedb/yoloexplorer.git
 ```
-Building from source
-```
-pip install -e . 
-```
+Pypi installation coming soon
 
 ## Quickstart
 YOLOExplorer can be used to rapidly generate new versions of CV datasets trainable on [Ultralytics YOLO, SAM, FAST-SAM, RT-DETR](https://github.com/ultralytics/ultralytics) and more models.

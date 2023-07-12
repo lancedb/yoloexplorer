@@ -1,7 +1,7 @@
 from pathlib import Path
-
-import pkg_resources as pkg
 from setuptools import find_packages, setup
+
+# import pkg_resources as pkg
 
 # Settings
 FILE = Path(__file__).resolve()
