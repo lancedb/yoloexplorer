@@ -10,8 +10,8 @@ import yaml
 from tqdm import tqdm
 
 from ultralytics import YOLO
-from ultralytics.yolo.utils import LOGGER, colorstr
-from ultralytics.yolo.utils.plotting import Annotator
+from ultralytics.yolo.utils import LOGGER, colorstr          
+from ultralytics.yolo.utils.plotting import Annotator, colors
 from torch import Tensor
 import lancedb
 import pyarrow as pa
@@ -227,7 +227,7 @@ class Explorer:
         df = (
             self.sql(query)
             if query
-            else self.table.to_pandas().set_index("id").loc[ids]
+            else self.table.to_pandas().iloc[ids]
         )
         if n < len(df):
             df = df[0:n]
@@ -236,11 +236,10 @@ class Explorer:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             if labels:
                 ann = Annotator(img)
-                for box, label in zip(row["bboxes"], row["labels"]):
-                    # import pdb; pdb.set_trace()
-                    ann.box_label(box.tolist(), label)
+                for box, label, cls in zip(row["bboxes"], row["labels"], row["cls"]):
+                    ann.box_label(box, label, color=colors(cls, True))
 
-                img = ann.im
+                img = ann.result()
             resized_images.append(img)
 
         # Create a grid of the images
@@ -357,9 +356,8 @@ class Explorer:
         self.removed_img_count += len(idxs)
 
         table = pa_table.filter(mask)
-        # ids = [i for i in range(len(table))]
-        # table = table.set_column(1, 'id', [ids])
-        # TODO: handle throws error if table is empty
+        ids = [i for i in range(len(table))]
+        table = table.set_column(0, 'id', [ids])  # TODO: Revisit this. This is a hack to fix the ids==dix
         self.table = self._create_table(
             self.temp_table_name, data=table, mode="overwrite"
         )  # work on a temporary table
@@ -379,6 +377,8 @@ class Explorer:
             data["vector"].iloc[0]
         ), "Vector dimension mismatch"
         table_df = pd.concat([table_df, data], ignore_index=True)
+        ids = [i for i in range(len(table_df))]
+        table_df["id"] = ids
         self.table = self._create_table(
             self.temp_table_name, data=table_df, mode="overwrite"
         )  # work on a temporary table
@@ -454,7 +454,7 @@ class Explorer:
         db.drop_table(self.temp_table_name)
 
         LOGGER.info("Changes persisted to the dataset.")
-        self._log_training_cmd((path / datafile_name).as_posix())
+        self._log_training_cmd(Path(path / datafile_name).relative_to(Path.cwd()).as_posix())
 
     def log_status(self):
         # TODO: Pretty print log status
@@ -545,22 +545,7 @@ class Explorer:
 
 
 if __name__ == "__main__":
-    voc_table = Explorer("coco8.yaml")
-    voc_table.build_embeddings()
-    img = voc_table.table.to_pandas()["img"][0]
-
-    coco_table = Explorer("coco128.yaml")
-    coco_table.build_embeddings()
-    _, idx = voc_table.get_similar_imgs(img)
-
-    coco_table.add_imgs(voc_table, idx)
-    coco_table.remove_imgs([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    coco_table.persist()
-    # exp.plot_similar_imgs(1)
-    # sim = exp.get_similarity_index()
-    # exp.plot_similirity_index()
-    # exp.remove_imgs(1)
-    # exp.persist()
-    import pdb
-
-    pdb.set_trace()
+    voc_table = Explorer("coco128.yaml")
+    voc_table.build_embeddings(force=True)
+    voc_table.remove_imgs([7,10,11,12,13,14,15,16,17,18,19,20,21,22,23])
+    # import pdb;pdb.set_trace()
