@@ -3,6 +3,7 @@
 Explore, manipulate and iterate on Computer Vision datasets with precision using simple APIs. 
 Supports SQL filters, vector similarity search, native interface with Pandas and more.
 
+
 * Analyse your datasets with powerful custom queries
 * Find and remove bad images (duplicates, out of domain data and more)
 * Enrich datasets by adding more examples from another datasets
@@ -176,6 +177,5 @@ Pre-filtering will enable powerful queries like - "Show me images similar to <IM
 Notes:
 * The API will have some minor changes going from dev to minor release
 * For all practical purposes the ids are same as row number and is reset after every addition or removal
-
 
 
