@@ -74,6 +74,7 @@ coco_exp.plot_similar_imgs(query="WHERE labels LIKE '%motorbike%'")
 
 <details>
 <summary> <b>Plotting</b></summary>
+
 | Visualization Method | Description | Arguments |
 |---|---|---|
 | `plot_imgs(ids, query, n=10)` | Plots the given `ids` or the result of the SQL query. One of the 2 must be provided. | `ids`: A list of image IDs or a SQL query. `n`: The number of images to plot. |

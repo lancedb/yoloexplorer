@@ -61,6 +61,28 @@ class TestExplorer:
             1,
         ], f'the result of the sql query should be [0,1] found {result["id"].to_list}'
 
+    def test_id_reassignment(self):
+        coco_exp = Explorer("coco128.yaml")
+        coco_exp.build_embeddings(force=True)
+
+        coco8_exp = Explorer("coco8.yaml")
+        coco8_exp.build_embeddings(force=True)
+        # test removal
+        for i in range(4):
+            coco_exp.remove_imgs([i])
+            df = coco_exp.table.to_pandas()
+            assert df["id"].to_list() == [idx for idx in range(len(df))], "the ids should be reassigned"
+
+        # test addition
+        coco_exp.add_imgs(coco8_exp, [i for i in range(4)])
+        df = coco_exp.table.to_pandas()
+        assert df["id"].to_list() == [idx for idx in range(len(df))], "the ids should be reassigned"
+
+        # test reset
+        coco_exp.reset()
+        df = coco_exp.table.to_pandas()
+        assert df["id"].to_list() == [idx for idx in range(128)], "the ids should be reassigned"
+
     """
     # Not supported yet
     def test_copy_embeddings_from_table(self):
