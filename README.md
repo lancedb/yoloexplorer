@@ -3,7 +3,12 @@
 Explore, manipulate and iterate on Computer Vision datasets with precision using simple APIs. 
 Supports SQL filters, vector similarity search, native interface with Pandas and more.
 
-### Installation (TODO: Relase on pypi)
+* Analyse your datasets with powerful custom queries
+* Find and remove bad images (duplicates, out of domain data and more)
+* Enrich datasets by adding more examples from another datasets
+* And more
+
+### Installation
 ```
 pip install yoloexplorer
 ```
@@ -42,7 +47,7 @@ df = coco_exp.sql("SELECT * from 'table' WHERE labels like '%person%' and labels
 coco_exp.plot_imgs(ids=df["id"][0:4].to_list())
 ```
 Result
-![img](./yoloexplorer/assets/docs/plotting.png "Result")
+<img src="./yoloexplorer/assets/docs/plotting.png" height=50% width=50% />
 The above is equivlant to plotting directly with a query:
 ```python
 voc_exp.plot_imgs(query=query, n=4)
@@ -56,7 +61,7 @@ The id of the first image in this case was 117
 imgs, ids = coco_exp.get_similar_imgs(117, n=6) # accepts ids/idx, Path, or img blob
 voc_exp.plot_imgs(ids)
 ```
-![Similar Imgs](./yoloexplorer/assets/docs/sim_plotting.png "Result")
+<img src="./yoloexplorer/assets/docs/sim_plotting.png" height=50% width=50% />
 The above is equivlant to directly calling `plot_similar_imgs`
 ```python
 voc_exp.plot_similar_imgs(117, n=6)
@@ -123,18 +128,42 @@ coco_exp.reset()
 
 <details>
 <summary><b>(Advanced querying)Getting insights from Similarity index</b></summary>
+The `plot_similarity_index` method can be used to visualize the similarity index of the dataset. The similarity index is a measure of how similar each image is to all the other images in the dataset.
+Let's the the similarity index of the VOC dataset keeping all the default settings
 
+```python
+voc_exp.plot_similarity_index()
+```
+
+<img src="./yoloexplorer/assets/docs/sim_index.png" height=50% width=50%><br/>
+You can also get the the similarity index as a numpy array to perform advanced querys.
+
+```python
+sim = voc_exp.get_similarity_index()
+```
+Now you can combine the similarity index with other querying options discussed above to create even more powerful queries. Here's an example:
+
+"Let's say you've created a list of candidates you wish to remove from the dataset. Now, you want to filter out the images that have similarity index less than 250, i.e, remove the images that are 90%(`sim_thres`) or more similar to more than 250 images in the dataset.
+"
+```
+ids = [...] # filtered ids list
+filter = np.where(sim > 250)
+final_ids = np.intersect1d(ids, filter) # intersect both arrays
+
+exp.remove_imgs(final_ids)
+```python
 </details>
 
 
 TODOs before release
-- [ ] Register Pypi
+- [x] Register Pypi
 - [x] Add more tests
 - [x] Write basic README
 - [x] Write intro notebooks
-- [ ] Make images show labels
-- [ ] (Temp)Make ids === idx for the table. Reset the 'id' column to row number on every deletion/addition
-Can wait
+- [x] Make images show labels
+- [x] (Temp)Make ids === idx for the table. Reset the 'id' column to row number on every deletion/addition
+
+Future TODOs
 - [ ] Warn/throw when mixing OOD data
 - [ ] Move hacky code outside the main API file
 
