@@ -139,7 +139,9 @@ class Explorer:
                     val = val.tolist()
                 table_data[key].append(val)
 
-            table_data["img"].append(encode(batch["im_file"]))
+            # Temporarily disabled, storing blobs is slow
+            # table_data["img"].append(encode(batch["im_file"])) 
+            table_data["img"].append(batch["im_file"]) 
 
             if len(table_data[key]) == batch_size or idx == dataset.ni - 1:
                 df = pd.DataFrame(table_data)
@@ -535,7 +537,7 @@ class Explorer:
     def _embedding_func(self, imgs):
         embeddings = []
         for img in tqdm(imgs):
-            img = decode(img)
+            img = decode(img) if isinstance(img, bytes) else img
             embeddings.append(
                 self.predictor.embed(img, verbose=self.verbose).squeeze().cpu().numpy()
             )
