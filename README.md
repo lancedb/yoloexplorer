@@ -49,7 +49,8 @@ df = coco_exp.sql("SELECT * from 'table' WHERE labels like '%person%' and labels
 coco_exp.plot_imgs(ids=df["id"][0:4].to_list())
 ```
 Result
-<img src="./yoloexplorer/assets/docs/plotting.png" height=50% width=50% />
+
+<img src="./yoloexplorer/assets/docs/plotting.png" height=50% width=50% /><br/>
 The above is equivlant to plotting directly with a query:
 ```python
 voc_exp.plot_imgs(query=query, n=4)
