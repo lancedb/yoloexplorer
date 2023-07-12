@@ -7,3 +7,4 @@ __pycache__/
 *_updated.yaml
 *_updated.txt
 .DS_Store
+*.egg-info/*
