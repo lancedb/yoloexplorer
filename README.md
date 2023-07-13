@@ -182,6 +182,6 @@ Notes:
 
 Start dashboard application using following command.
 ```
-streamlit run frontend/dashboard.py --port 8000
+streamlit run frontend/dashboard.py --server.port 8000
 ```
 
