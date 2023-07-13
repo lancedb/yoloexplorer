@@ -99,7 +99,7 @@ coco_exp.plot_similar_imgs(query="WHERE labels LIKE '%motorbike%'")
 </details>
 
 <details>
-<summary> <b>Add, remove, persist new Datasets and start training!</b></summary>
+<summary> <b>Add, remove, merge parts of datasets, persist new Datasets, and start training!</b></summary>
 Once you've found the right images that you'd like to add or remove, you can simply add/remove them from your dataset and generate the updated version.
 
 <b>Removing data</b><br/>
