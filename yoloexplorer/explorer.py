@@ -21,7 +21,7 @@ from sklearn.decomposition import PCA
 
 from yoloexplorer.dataset import get_dataset_info, Dataset
 from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
-
+from yoloexplorer.frontend import dash
 
 SCHEMA = [
     "id",
@@ -486,6 +486,12 @@ class Explorer:
         result = duckdb.sql(query).to_df()
 
         return result
+
+    def dash(self):
+        """
+        Launches a dashboard to visualize the dataset.
+        """
+        dash(self)
 
     def _log_training_cmd(self, data_path):
         LOGGER.info(
