@@ -218,7 +218,7 @@ class Explorer:
             n (int, optional): number of similar images to return. Defaults to 10.
         """
         _, ids = self.get_similar_imgs(img, n)
-        self.plot_imgs(ids, n=n)
+        self.plot_imgs(ids)
 
     def plot_imgs(self, ids=None, query=None, labels=True):
         if ids is None and query is None:
