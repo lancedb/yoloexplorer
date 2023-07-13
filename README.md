@@ -64,7 +64,7 @@ The id of the first image in this case was 117
 imgs, ids = coco_exp.get_similar_imgs(117, n=6) # accepts ids/idx, Path, or img blob
 voc_exp.plot_imgs(ids)
 ```
-<img src="./yoloexplorer/assets/docs/sim_plotting.png" height=50% width=50% />
+<img src="./yoloexplorer/assets/docs/sim_plotting.png" height=50% width=50% /><br/>
 The above is equivlant to directly calling `plot_similar_imgs`
 ```python
 voc_exp.plot_similar_imgs(117, n=6)
