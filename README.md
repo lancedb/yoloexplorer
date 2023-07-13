@@ -177,3 +177,11 @@ Notes:
 * For all practical purposes the ids are same as row number and is reset after every addition or removal
 
 
+
+## Dashboard:
+
+Start dashboard application using following command.
+```
+streamlit run frontend/dashboard.py --server.port 8000
+```
+
