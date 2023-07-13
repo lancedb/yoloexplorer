@@ -1,5 +1,6 @@
 import streamlit as st
 from yoloexplorer import Explorer
+from streamlit_image_select import image_select
 from typing import List
 
 st.title("YOLOExplorer")
@@ -40,9 +41,9 @@ with num_sample_w:
 
 if num_samples_show:
     if img_train_checkbox:
-        img_url = "/home/hd/zidane.jpg" # Put path to your image
-        train_image_paths = [img_url] * 50
-        st.image(train_image_paths, use_column_width=True)
-        # clicked = image_select("Training Samples", images=train_image_paths, use_column_width=True)
+        img_url = "/home/hd/zidane.jpg"  # Put path to your image
+        train_image_paths = [img_url] * int(num_samples_show)
+        # st.image(train_image_paths, use_column_width="always")
+        clicked = image_select("Training Samples", images=train_image_paths)
 
 
