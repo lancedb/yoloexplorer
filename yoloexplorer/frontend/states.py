@@ -7,6 +7,3 @@ def init_states():
     st.session_state.EXPLORER = None
     st.session_state.IMGS = []
     st.session_state.SELECTED_IMGS = 0
-
-def update_state(state, value):
-    st.session_state[state] = value

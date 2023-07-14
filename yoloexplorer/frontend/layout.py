@@ -81,9 +81,6 @@ def layout():
         similarity_form(selected_imgs)
         display_labels = st.checkbox("Labels", value=False) #noqa
 
-        # TODO
-        st.write("Coming soon")
-        st.write("Merge Datasets")
 
 def launch():
     cmd = ["streamlit", "run", __file__, "--server.maxMessageSize", "1024"]
