@@ -6,6 +6,7 @@ import streamlit as st
 from streamlit_image_select import image_select
 from typing import List
 import streamlit.web.cli as stcli
+from yoloexplorer import config
 
 def init_states():
     st.session_state.EXPLORER = None
@@ -14,17 +15,12 @@ def init_states():
 def update_state(state, value):
     st.session_state[state] = value
 
-def argparser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--info", type=str, required=True)
-    return parser.parse_args()
-
-def layout(info):
+def layout():
     # function scope import
     from yoloexplorer import Explorer
 
     init_states()
-    with open(info) as json_file:
+    with open(config.TEMP_CONFIG_PATH) as json_file:
         data = json.load(json_file)
     exp = Explorer(**data)
     exp.build_embeddings()
@@ -51,15 +47,12 @@ def layout(info):
         clicked = image_select("Samples", images=st.session_state.IMGS)
 
 
-def launch(info):
-    cmd = ["streamlit", "run", __file__, "-- --info", str(info.name)]
+def launch():
+    cmd = ["streamlit", "run", __file__]
     try:
         subprocess.run(cmd, check=True)
     except Exception as e:
         print(e)
-    
-    #stcli.main()
 
 if __name__ == "__main__":
-    args = argparser()
-    layout(args.info)
+    layout()
