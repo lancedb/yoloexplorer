@@ -1,4 +1,0 @@
-lancedb
-duckdb
-scikit-learn
-ultralytics
