@@ -1,6 +1,8 @@
 from pathlib import Path
 from collections import defaultdict
 import math
+import json
+import tempfile
 
 import pandas as pd
 import cv2
@@ -21,7 +23,7 @@ from sklearn.decomposition import PCA
 
 from yoloexplorer.dataset import get_dataset_info, Dataset
 from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
-from yoloexplorer.frontend import dash
+from yoloexplorer.frontend import launch
 
 SCHEMA = [
     "id",
@@ -68,6 +70,7 @@ class Explorer:
         self.data = data
         self.table = None
         self.model = model
+        self.device = device
         self.project = project
         self.dataset_info = None
         self.predictor = None
@@ -491,7 +494,25 @@ class Explorer:
         """
         Launches a dashboard to visualize the dataset.
         """
-        dash(self)
+        (Path(self.project) / 'config').mkdir(exist_ok=True)
+        with tempfile.NamedTemporaryFile(prefix='_temp_',
+                                    suffix=f'{id(self)}.json',
+                                    mode='w+',
+                                    encoding='utf-8',
+                                    dir=Path(self.project) / 'config',
+                                    delete=False) as file:
+            json.dump(self.config, file)
+
+        launch(file)
+
+    @property
+    def config(self):
+        return {
+            "project": self.project,
+            "model": self.model,
+            "device": self.device,
+            "data": self.data
+        }
 
     def _log_training_cmd(self, data_path):
         LOGGER.info(
