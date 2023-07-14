@@ -1,11 +1,8 @@
-import sys
 import json
 import subprocess
-import argparse
 import streamlit as st
 from streamlit_image_select import image_select
 from typing import List
-import streamlit.web.cli as stcli
 from yoloexplorer import config
 
 def init_states():
@@ -44,7 +41,7 @@ def layout():
     exp = st.session_state.EXPLORER
     st.session_state.IMGS = exp.table.to_pandas()["path"].to_list()
     if st.session_state.IMGS:
-        clicked = image_select("Samples", images=st.session_state.IMGS)
+        clicked = image_select("Samples", images=st.session_state.IMGS) #noqa
 
 
 def launch():

@@ -2,7 +2,6 @@ from pathlib import Path
 from collections import defaultdict
 import math
 import json
-import tempfile
 
 import pandas as pd
 import cv2
