@@ -2,7 +2,6 @@ import json
 import subprocess
 import streamlit as st
 from streamlit_image_select import image_select
-from typing import List
 from yoloexplorer import config
 from yoloexplorer.frontend.states import init_states, update_state
 
