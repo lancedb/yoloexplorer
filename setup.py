@@ -11,6 +11,8 @@ REQUIREMENTS = [
 "lancedb",
 "duckdb",
 "scikit-learn",
+"streamlit",
+"streamlit-image-select"
 "ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings"
 ]
 
