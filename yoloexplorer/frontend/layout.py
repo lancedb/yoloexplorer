@@ -4,13 +4,7 @@ import streamlit as st
 from streamlit_image_select import image_select
 from typing import List
 from yoloexplorer import config
-
-def init_states():
-    st.session_state.EXPLORER = None
-    st.session_state.IMGS = []
-
-def update_state(state, value):
-    st.session_state[state] = value
+from yoloexplorer.frontend.states import init_states, update_state
 
 def layout():
     # function scope import
@@ -24,28 +18,19 @@ def layout():
     update_state("EXPLORER", exp)
     st.title("YOLOExplorer")
 
-    with st.sidebar:
-        dataset_info = st.session_state.EXPLORER.dataset_info
-        st.write("**Dataset Information :**")
-
-        for dataset_type in ["train", "val", "tets"]:
-            st.text(f"{dataset_type.capitalize()} paths :")
-            if isinstance(dataset_info['train'], str):
-                st.text(dataset_info['train'])
-            elif isinstance(dataset_info['train', List]):
-                for p in dataset_info['train']:
-                    st.text(p)
 
     st.write("**Dataset Visualization**")
 
     exp = st.session_state.EXPLORER
     st.session_state.IMGS = exp.table.to_pandas()["path"].to_list()
     if st.session_state.IMGS:
-        clicked = image_select("Samples", images=st.session_state.IMGS) #noqa
+        num = min(4000, len(st.session_state.IMGS))
+
+        clicked = image_select("Samples", images=st.session_state.IMGS[0:num]) #noqa
 
 
 def launch():
-    cmd = ["streamlit", "run", __file__]
+    cmd = ["streamlit", "run", __file__, "--server.maxMessageSize", "1024"]
     try:
         subprocess.run(cmd, check=True)
     except Exception as e:
