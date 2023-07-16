@@ -5,12 +5,8 @@ class TestExplorer:
     def test_embeddings_creation(self):
         coco_exp = Explorer("coco8.yaml")
         coco_exp.build_embeddings(force=True)
-        assert (
-            coco_exp.table_name == "coco8.yaml"
-        ), "the table name should be coco8.yaml"
-        assert (
-            len(coco_exp.table) == 4
-        ), "the length of the embeddings table should be 8"
+        assert coco_exp.table_name == "coco8.yaml", "the table name should be coco8.yaml"
+        assert len(coco_exp.table) == 4, "the length of the embeddings table should be 8"
 
     def test_sim_idx(self):
         coco_exp = Explorer("coco8.yaml")
@@ -32,13 +28,9 @@ class TestExplorer:
         coco_exp.log_status()
         coco_exp.remove_imgs([0, 1])
         coco_exp.remove_imgs([0])
-        assert (
-            len(coco_exp.table.to_arrow()) == 1
-        ), "the length of the embeddings table should be 1"
+        assert len(coco_exp.table.to_arrow()) == 1, "the length of the embeddings table should be 1"
         coco_exp.persist()
-        assert (
-            len(coco_exp.table.to_arrow()) == 1
-        ), "the length of the embeddings table should be 1"
+        assert len(coco_exp.table.to_arrow()) == 1, "the length of the embeddings table should be 1"
 
     def test_add_imgs(self):
         coco_exp = Explorer("coco8.yaml")
@@ -47,9 +39,7 @@ class TestExplorer:
         coco128_exp.build_embeddings()
 
         coco_exp.add_imgs(coco128_exp, [i for i in range(4)])
-        assert (
-            len(coco_exp.table) == 8
-        ), "the length of the embeddings table should be 8"
+        assert len(coco_exp.table) == 8, "the length of the embeddings table should be 8"
 
     def test_sql(self):
         coco_exp = Explorer("coco8.yaml")

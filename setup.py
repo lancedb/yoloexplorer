@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 # Settings
 FILE = Path(__file__).resolve()
 PARENT = FILE.parent  # root directory
-README = (PARENT / 'README.md').read_text(encoding='utf-8')
+README = (PARENT / "README.md").read_text(encoding="utf-8")
 REQUIREMENTS = [
 "lancedb",
 "duckdb",
@@ -15,6 +15,7 @@ REQUIREMENTS = [
 "streamlit-image-select",
 "ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings"
 ]
+
 
 def get_version():
     return "0.0.1.dev1"
