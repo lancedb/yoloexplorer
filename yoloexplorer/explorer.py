@@ -11,7 +11,7 @@ import yaml
 from tqdm import tqdm
 
 from ultralytics import YOLO
-from ultralytics.yolo.utils import LOGGER, colorstr          
+from ultralytics.yolo.utils import LOGGER, colorstr
 from ultralytics.yolo.utils.plotting import Annotator, colors
 from torch import Tensor
 import lancedb
@@ -100,33 +100,25 @@ class Explorer:
         self.trainset = trainset
         self.verbose = verbose
 
-        dataset = Dataset(
-            img_path=trainset, data=self.dataset_info, augment=False, cache=False
-        )
+        dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
         batch_size = dataset.ni  # TODO: fix this hardcoding
         db = self._connect()
         if not force and self.table_name in db.table_names():
-            LOGGER.info(
-                "LanceDB embedding space already exists. Attempting to reuse it. Use force=True to overwrite."
-            )
+            LOGGER.info("LanceDB embedding space already exists. Attempting to reuse it. Use force=True to overwrite.")
             self.table = self._open_table(self.table_name)
             self.version = self.table.version
             if len(self.table) == dataset.ni:
                 return
             else:
                 self.table = None
-                LOGGER.info(
-                    "Table length does not match the number of images in the dataset. Building embeddings..."
-                )
+                LOGGER.info("Table length does not match the number of images in the dataset. Building embeddings...")
 
         table_data = defaultdict(list)
         for idx, batch in enumerate(dataset):
             batch.pop("img")
             batch["id"] = idx
             batch["cls"] = batch["cls"].flatten().int().tolist()
-            box_cls_pair = sorted(
-                zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1]
-            )
+            box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
             batch["bboxes"] = [box for box, _ in box_cls_pair]
             batch["cls"] = [cls for _, cls in box_cls_pair]
             batch["labels"] = [self.dataset_info["names"][i] for i in batch["cls"]]
@@ -143,15 +135,11 @@ class Explorer:
 
             if len(table_data[key]) == batch_size or idx == dataset.ni - 1:
                 df = pd.DataFrame(table_data)
-                df = with_embeddings(
-                    self._embedding_func, df, "img", batch_size=batch_size
-                )
+                df = with_embeddings(self._embedding_func, df, "img", batch_size=batch_size)
                 if self.table:
                     self.table.add(table_data)
                 else:
-                    self.table = self._create_table(
-                        self.table_name, data=df, mode="overwrite"
-                    )
+                    self.table = self._create_table(self.table_name, data=df, mode="overwrite")
                 self.version = self.table.version
                 table_data = defaultdict(list)
 
@@ -165,9 +153,7 @@ class Explorer:
             n_components (int, optional): number of components. Defaults to 2.
         """
         if self.table is None:
-            LOGGER.error(
-                "No embedding space found. Please build the embedding space first."
-            )
+            LOGGER.error("No embedding space found. Please build the embedding space first.")
             return None
         pca = PCA(n_components=2)
         embeddings = np.array(self.table.to_arrow()["vector"].to_pylist())
@@ -188,9 +174,7 @@ class Explorer:
         """
         embeddings = None
         if self.table is None:
-            LOGGER.error(
-                "No embedding space found. Please build the embedding space first."
-            )
+            LOGGER.error("No embedding space found. Please build the embedding space first.")
             return None
         if isinstance(img, int):
             embeddings = self.table.to_pandas()["vector"][img]
@@ -199,9 +183,7 @@ class Explorer:
         elif isinstance(img, bytes):
             img = decode(img)
         else:
-            LOGGER.error(
-                "img should be index from the table(int) or path of an image (str or Path)"
-            )
+            LOGGER.error("img should be index from the table(int) or path of an image (str or Path)")
             return
 
         if embeddings is None:
@@ -226,11 +208,7 @@ class Explorer:
 
         # Resize the images to the minimum and maximum width and height
         resized_images = []
-        df = (
-            self.sql(query)
-            if query
-            else self.table.to_pandas().iloc[ids]
-        )
+        df = self.sql(query) if query else self.table.to_pandas().iloc[ids]
         for _, row in df.iterrows():
             img = decode(row["img"])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -247,7 +225,7 @@ class Explorer:
             return
         # Create a grid of the images
 
-        cols = 10 if len(resized_images) > 10 else max(2,len(resized_images))
+        cols = 10 if len(resized_images) > 10 else max(2, len(resized_images))
         rows = max(1, math.ceil(len(resized_images) / cols))
         fig, axes = plt.subplots(nrows=rows, ncols=cols)
         fig.subplots_adjust(hspace=0, wspace=0)
@@ -257,11 +235,8 @@ class Explorer:
             ax.axis("off")
         # Display the grid of images
         plt.show()
-    
 
-    def get_similarity_index(
-        self, top_k=0.01, sim_thres=0.90, reduce=False, sorted=False
-    ):
+    def get_similarity_index(self, top_k=0.01, sim_thres=0.90, reduce=False, sorted=False):
         """
 
         Args:
@@ -273,9 +248,7 @@ class Explorer:
             np.array: Similarity index
         """
         if self.table is None:
-            LOGGER.error(
-                "No embedding space found. Please build the embedding space first."
-            )
+            LOGGER.error("No embedding space found. Please build the embedding space first.")
             return None
         if top_k > 1.0:
             LOGGER.warning("top_k should be between 0 and 1. Setting top_k to 1.0")
@@ -285,14 +258,10 @@ class Explorer:
             top_k = 0.0
         if sim_thres is not None:
             if sim_thres > 1.0:
-                LOGGER.warning(
-                    "sim_thres should be between 0 and 1. Setting sim_thres to 1.0"
-                )
+                LOGGER.warning("sim_thres should be between 0 and 1. Setting sim_thres to 1.0")
                 sim_thres = 1.0
             if sim_thres < 0.0:
-                LOGGER.warning(
-                    "sim_thres should be between 0 and 1. Setting sim_thres to 0.0"
-                )
+                LOGGER.warning("sim_thres should be between 0 and 1. Setting sim_thres to 0.0")
                 sim_thres = 0.0
         embs = np.array(self.table.to_arrow()["vector"].to_pylist())
         self._sim_index = np.zeros(len(embs))
@@ -307,12 +276,8 @@ class Explorer:
             dim = embs.shape[1]
             values = pa.array(embs.reshape(-1), type=pa.float32())
             table_data = pa.FixedSizeListArray.from_arrays(values, dim)
-            table = pa.table(
-                [table_data, self.table.to_arrow()["id"]], names=["vector", "id"]
-            )
-            self._search_table = self._create_table(
-                "reduced_embs", data=table, mode="overwrite"
-            )
+            table = pa.table([table_data, self.table.to_arrow()["id"]], names=["vector", "id"])
+            self._search_table = self._create_table("reduced_embs", data=table, mode="overwrite")
 
         # with multiprocessing.Pool() as pool: # multiprocessing doesn't do much. Need to revisit
         #    list(tqdm(pool.imap(build_index, iterable)))
@@ -327,9 +292,7 @@ class Explorer:
 
         return self._sim_index if not sorted else np.sort(self._sim_index)
 
-    def plot_similarity_index(
-        self, sim_thres=0.90, top_k=0.01, reduce=False, sorted=False
-    ):
+    def plot_similarity_index(self, sim_thres=0.90, top_k=0.01, reduce=False, sorted=False):
         """
         Plots the similarity index
 
@@ -366,10 +329,8 @@ class Explorer:
 
         table = pa_table.filter(mask)
         ids = [i for i in range(len(table))]
-        table = table.set_column(0, 'id', [ids])  # TODO: Revisit this. This is a hack to fix the ids==dix
-        self.table = self._create_table(
-            self.temp_table_name, data=table, mode="overwrite"
-        )  # work on a temporary table
+        table = table.set_column(0, "id", [ids])  # TODO: Revisit this. This is a hack to fix the ids==dix
+        self.table = self._create_table(self.temp_table_name, data=table, mode="overwrite")  # work on a temporary table
 
         self.log_status()
 
@@ -382,9 +343,7 @@ class Explorer:
         """
         table_df = self.table.to_pandas()
         data = exp.table.to_pandas().iloc[idxs]
-        assert len(table_df["vector"].iloc[0]) == len(
-            data["vector"].iloc[0]
-        ), "Vector dimension mismatch"
+        assert len(table_df["vector"].iloc[0]) == len(data["vector"].iloc[0]), "Vector dimension mismatch"
         table_df = pd.concat([table_df, data], ignore_index=True)
         ids = [i for i in range(len(table_df))]
         table_df["id"] = ids
@@ -441,25 +400,17 @@ class Explorer:
 
         new_dataset_info = self.dataset_info.copy()
         new_dataset_info.pop("yaml_file")
-        new_dataset_info.pop(
-            "path"
-        )  # relative paths will get messed up when merging datasets
-        new_dataset_info.pop(
-            "download"
-        )  # Assume all files are present offline, there is no way to store metadata yet
+        new_dataset_info.pop("path")  # relative paths will get messed up when merging datasets
+        new_dataset_info.pop("download")  # Assume all files are present offline, there is no way to store metadata yet
         new_dataset_info["train"] = (path / train_txt).resolve().as_posix()
         for key, value in new_dataset_info.items():
             if isinstance(value, Path):
                 new_dataset_info[key] = value.as_posix()
 
-        yaml.dump(
-            new_dataset_info, open(path / datafile_name, "w")
-        )  # update dataset.yaml file
+        yaml.dump(new_dataset_info, open(path / datafile_name, "w"))  # update dataset.yaml file
 
         # TODO: not sure if this should be called data_final to prevent overwriting the original data?
-        self.table = self._create_table(
-            self.table_name, data=self.table.to_arrow(), mode="overwrite"
-        )
+        self.table = self._create_table(self.table_name, data=self.table.to_arrow(), mode="overwrite")
         db.drop_table(self.temp_table_name)
 
         LOGGER.info("Changes persisted to the dataset.")
@@ -528,17 +479,13 @@ class Explorer:
         name = Path(table_path).stem  # lancedb doesn't need .lance extension
         db = lancedb.connect(path)
         table = db.open_table(name)
-        return self._create_table(
-            self.table_name, data=table.to_arrow(), mode="overwrite"
-        )
+        return self._create_table(self.table_name, data=table.to_arrow(), mode="overwrite")
 
     def _embedding_func(self, imgs):
         embeddings = []
         for img in tqdm(imgs):
             img = decode(img)
-            embeddings.append(
-                self.predictor.embed(img, verbose=self.verbose).squeeze().cpu().numpy()
-            )
+            embeddings.append(self.predictor.embed(img, verbose=self.verbose).squeeze().cpu().numpy())
         return embeddings
 
     def _setup_predictor(self, model, device=""):

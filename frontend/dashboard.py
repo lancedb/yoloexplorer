@@ -9,20 +9,20 @@ with st.sidebar:
     default_data_yaml = "coco128.yaml"
     st.text(f"Dataset: {default_data_yaml}")
     if default_data_yaml:
-        if 'data_yaml' not in st.session_state:
-            st.session_state['data_yaml'] = default_data_yaml
-        if 'session' not in st.session_state:
-            st.session_state['session'] = Explorer(default_data_yaml, model=None)
-            dataset_info = st.session_state['session'].dataset_info
+        if "data_yaml" not in st.session_state:
+            st.session_state["data_yaml"] = default_data_yaml
+        if "session" not in st.session_state:
+            st.session_state["session"] = Explorer(default_data_yaml, model=None)
+            dataset_info = st.session_state["session"].dataset_info
 
             st.write("**Dataset Information :**")
 
             for dataset_type in ["train", "val", "tets"]:
                 st.text(f"{dataset_type.capitalize()} paths :")
-                if isinstance(dataset_info['train'], str):
-                    st.text(dataset_info['train'])
-                elif isinstance(dataset_info['train', List]):
-                    for p in dataset_info['train']:
+                if isinstance(dataset_info["train"], str):
+                    st.text(dataset_info["train"])
+                elif isinstance(dataset_info["train", List]):
+                    for p in dataset_info["train"]:
                         st.text(p)
 
 st.write("**Dataset Visualization**")
@@ -45,5 +45,3 @@ if num_samples_show:
         train_image_paths = [img_url] * int(num_samples_show)
         # st.image(train_image_paths, use_column_width="always")
         clicked = image_select("Training Samples", images=train_image_paths)
-
-
