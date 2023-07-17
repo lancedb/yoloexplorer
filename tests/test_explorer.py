@@ -78,7 +78,7 @@ class TestExplorer:
         coco_exp.build_embeddings()
         coco_exp.get_similar_imgs(0, 10)
 
-        paths = coco_exp.table.to_df()["paths"].to_list()
+        paths = coco_exp.table.to_pandas()["paths"].to_list()
         coco_exp.get_similar_imgs([paths], 10)
         
     """
