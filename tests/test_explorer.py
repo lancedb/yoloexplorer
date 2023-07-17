@@ -77,7 +77,9 @@ class TestExplorer:
         coco_exp = Explorer("coco128.yaml")
         coco_exp.build_embeddings()
         coco_exp.get_similar_imgs(0, 10)
-        coco_exp.get_similar_imgs([0,1], 10)
+
+        paths = coco_exp.table.to_df()["paths"].to_list()
+        coco_exp.get_similar_imgs([paths], 10)
         
     """
     # Not supported yet
