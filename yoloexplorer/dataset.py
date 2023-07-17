@@ -32,9 +32,7 @@ def get_relative_path(path1, path2):
 
 class Dataset(YOLODataset):
     def __init__(self, *args, data=None, **kwargs):
-        super().__init__(
-            *args, data=data, use_segments=False, use_keypoints=False, **kwargs
-        )
+        super().__init__(*args, data=data, use_segments=False, use_keypoints=False, **kwargs)
 
     # NOTE: Load the image directly without any resize operations.
     def load_image(self, i):

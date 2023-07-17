@@ -1,6 +1,6 @@
 # YOLOExplorer
 
-Explore, manipulate and iterate on Computer Vision datasets with precision using simple APIs. 
+Explore, manipulate and iterate on Computer Vision datasets with precision using simple APIs.
 Supports SQL filters, vector similarity search, native interface with Pandas and more.
 
 
@@ -111,12 +111,12 @@ coco_exp.remove_imgs([100,120,300..n]) # Removes images at the given ids.
 <b>Adding data</b><br/>
 For adding data from another dataset, you need an explorer object of that dataset with embeddings built. You can then pass that object along with the ids of the imgs that you'd like to add from that dataset.
 ```
-coco_exp.add_imgs(exp, idxs) # 
+coco_exp.add_imgs(exp, idxs) #
 ```
 Note: You can use SQL querying and/or similarity searches to get the desired ids from the datasets.
 
 <b>Persisting the Table: Create new dataset and start training</b><br/>
-After making the desired changes, you can persist the table to create the new dataset. 
+After making the desired changes, you can persist the table to create the new dataset.
 ```
 coco_exp.persist()
 ```
@@ -175,13 +175,3 @@ Pre-filtering will enable powerful queries like - "Show me images similar to <IM
 Notes:
 * The API will have some minor changes going from dev to minor release
 * For all practical purposes the ids are same as row number and is reset after every addition or removal
-
-
-
-## Dashboard:
-
-Start dashboard application using following command.
-```
-streamlit run frontend/dashboard.py --server.port 8000
-```
-
