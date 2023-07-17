@@ -6,4 +6,7 @@ INDEX_PAGE_SIMILARITY_FORM_KEY = "index_page_similarity_form"
 def init_states():
     st.session_state.EXPLORER = None
     st.session_state.IMGS = []
-    st.session_state.SELECTED_IMGS = 0
+    st.session_state.SELECTED_IMGS = []
+
+def update_state(state, value):
+    st.session_state[state] = value
