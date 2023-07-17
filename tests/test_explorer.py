@@ -83,6 +83,12 @@ class TestExplorer:
         df = coco_exp.table.to_pandas()
         assert df["id"].to_list() == [idx for idx in range(128)], "the ids should be reassigned"
 
+    def test_sim_search():
+        coco_exp = Explorer("coco128.yaml")
+        coco_exp.build_embeddings()
+        coco_exp.get_similar_imgs(0, 10)
+        coco_exp.get_similar_imgs([0,1], 10)
+        
     """
     # Not supported yet
     def test_copy_embeddings_from_table(self):

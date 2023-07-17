@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 from tqdm import tqdm
-
+from typing import List
 from ultralytics import YOLO
 from ultralytics.yolo.utils import LOGGER, colorstr          
 from ultralytics.yolo.utils.plotting import Annotator, colors
@@ -201,12 +201,19 @@ class Explorer:
             img = img
         elif isinstance(img, bytes):
             img = decode(img)
+        elif isinstance(img, list): # exceptional case for batch search from dash
+            df = self.table.to_pandas().set_index("path")
+            array = df.loc[img]["vector"].to_list()
+            embeddings = np.array(array)
+            if len(embeddings) > 1:
+                embeddings = np.mean(embeddings, axis=0)
+            else:
+                embeddings = np.squeeze(embeddings)
         else:
             LOGGER.error(
                 "img should be index from the table(int) or path of an image (str or Path)"
             )
             return
-
         if embeddings is None:
             embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
         sim = self.table.search(embeddings).limit(n).to_df()
