@@ -65,7 +65,7 @@ def find_similar_imgs(imgs, limit=25):
 
 def layout(): 
     st.set_page_config(layout='wide')
-    col1, col2= st.columns([0.75, 0.25], gap="small")
+    col1, col2 = st.columns([0.75, 0.25], gap="small")
 
     reset_to_init_state()
     with col1: 
@@ -79,8 +79,11 @@ def layout():
 
     with col2:
         similarity_form(selected_imgs)
-        display_labels = st.checkbox("Display Labels", value=False)
+        display_labels = st.checkbox("Labels", value=False) #noqa
 
+        # TODO
+        st.write("Coming soon")
+        st.write("Merge Datasets")
 
 def launch():
     cmd = ["streamlit", "run", __file__, "--server.maxMessageSize", "1024"]
