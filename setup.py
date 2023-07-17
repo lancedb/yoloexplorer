@@ -12,7 +12,7 @@ REQUIREMENTS = [
 "duckdb",
 "scikit-learn",
 "streamlit",
-"streamlit-image-select",
+"streamlit-dash",
 "ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings"
 ]
 
