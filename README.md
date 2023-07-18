@@ -11,7 +11,15 @@ Supports SQL filters, vector similarity search, native interface with Pandas and
 
 Try an example colab <a href="https://colab.research.google.com/github/lancedb/yoloexplorer/blob/main/examples/intro.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 
-<img src="./yoloexplorer/assets/docs/intro.gif" height=90% width=90% />
+🌟 NEW: Supports GUI Dashboard, Pythonic and notebook workflows
+<details open>
+<summary>Dashboard</summary>
+<img src="./yoloexplorer/assets/docs/dash_intro.gif" height=75% width=75% />
+</details>
+<details open>
+<summary>Colab / Notebook</summary>
+<img src="./yoloexplorer/assets/docs/intro.gif" height=75% width=75% />
+</details>
 
 ### Installation
 ```
@@ -32,6 +40,7 @@ coco_exp = Explorer("coco128.yaml")
 * Build the LanceDB table to allow querying
 ```python
 coco_exp.build_embeddings()
+coco_exp.dash() # Launch the GUI dashboard
 ```
 <details open>
 <summary> <b> Querying Basics </b> </summary>

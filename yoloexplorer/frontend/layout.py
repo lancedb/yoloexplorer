@@ -80,6 +80,8 @@ def layout():
     with col2:
         similarity_form(selected_imgs)
         display_labels = st.checkbox("Labels", value=False) #noqa
+        st.write("Coming Soon: ")
+        st.write("Export/Merge Dataset(s)")
 
 
 def launch():
