@@ -16,7 +16,7 @@ Try an example colab <a href="https://colab.research.google.com/github/lancedb/y
 <summary>Dashboard</summary>
 <img src="./yoloexplorer/assets/docs/dash_intro.gif" height=75% width=75% />
 </details>
-<details>
+<details open>
 <summary>Colab / Notebook</summary>
 <img src="./yoloexplorer/assets/docs/intro.gif" height=75% width=75% />
 </details>
