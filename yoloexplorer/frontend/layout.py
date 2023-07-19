@@ -4,28 +4,37 @@ import subprocess
 import streamlit as st
 from streamlit_dash import image_select
 from yoloexplorer import config
-from yoloexplorer.frontend.states import init_states, update_state, INDEX_PAGE_QUERY_FORM_KEY, INDEX_PAGE_SIMILARITY_FORM_KEY
+from yoloexplorer.frontend.states import init_states, update_state, widget_key
+from yoloexplorer.frontend.styles.base import set_page_dims
 
 @st.cache_data
-def _get_dataset():
-    from yoloexplorer import Explorer # function scope import
-
+def _get_config():
     with open(config.TEMP_CONFIG_PATH) as json_file:
         data = json.load(json_file)
-    exp = Explorer(**data)
+    return data
+
+@st.cache_data
+def _get_dataset(idx=0):
+    from yoloexplorer import Explorer # function scope import
+
+    config = _get_config()[idx]
+    exp = Explorer(**config)
     exp.build_embeddings()
 
     return exp
 
 def reset_to_init_state():
-    if st.session_state.get("EXPLORER") is None:
-        init_states()
-        exp = _get_dataset()
-        update_state("EXPLORER", exp)
-        update_state("IMGS", exp.table.to_pandas()["path"].to_list())
+    if st.session_state.get(f"STAGED_IMGS") is None:
+        cfgs = _get_config()
+        init_states(cfgs) 
+        for idx, cfg in enumerate(cfgs):
+            data = cfg["data"].split(".")[0]
+            exp = _get_dataset(idx)
+            update_state(f"EXPLORER_{data}", exp, rerun=False)
+            update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list(), rerun=False)
 
-def query_form():
-    with st.form(INDEX_PAGE_QUERY_FORM_KEY):
+def query_form(data):
+    with st.form(widget_key("query", data)):
         col1, col2 = st.columns([0.8, 0.2])
         with col1:
             query = st.text_input("Query", "", label_visibility="collapsed")
@@ -33,55 +42,95 @@ def query_form():
             submitted = st.form_submit_button("Query")
         if submitted:
             if query:
-                exp = st.session_state.EXPLORER
+                exp = st.session_state[f"EXPLORER_{data}"]
                 df = exp.sql(query)
-                update_state("IMGS", df["path"].to_list())
+                update_state(f"IMGS_{data}", df["path"].to_list(), rerun=False)
 
-def similarity_form(selected_imgs):
+def similarity_form(selected_imgs, selected_staged_imgs, data):
     st.write("Similarity Search")
-    with st.form(INDEX_PAGE_SIMILARITY_FORM_KEY):
+    with st.form(widget_key("similarity", data)):
         subcol1, subcol2 = st.columns([1,1])
         with subcol1:
             st.write("Limit")
             limit = st.number_input("limit", min_value=None, max_value=None, value=25, label_visibility="collapsed")
         
         with subcol2:
+            disabled = len(selected_imgs) and len(selected_staged_imgs) 
             st.write("Selected: ", len(selected_imgs))
-            submitted = st.form_submit_button("Search")
+            submitted = st.form_submit_button("Search", disabled=disabled)
+            if disabled:
+                st.error("Cannot search from staging and dataset")
 
         if submitted:
-            find_similar_imgs(selected_imgs, limit=limit)
+            imgs = selected_staged_imgs or selected_imgs
+            find_similar_imgs(data, imgs, limit)
 
-def find_similar_imgs(imgs, limit=25):
-    exp = st.session_state.EXPLORER
-    df = exp.table.to_pandas()
+
+def staging_area_form(selected_imgs, data):
+    st.write("Staging Area")
+    with st.form(widget_key("staging_area", data)):
+        remove = st.form_submit_button(":wastebasket:", disabled=len(selected_imgs) == 0)
+        clear = st.form_submit_button("Clear")
+        if remove:
+            staged_imgs = st.session_state[f"STAGED_IMGS"]
+            [staged_imgs.remove(img) for img in selected_imgs]
+            update_state(f"STAGED_IMGS", staged_imgs)
+
+        if clear:
+            update_state(f"STAGED_IMGS", [])
+
+def find_similar_imgs(data, imgs, limit=25):
+    exp = st.session_state[f"EXPLORER_{data}"]
     _, idx = exp.get_similar_imgs(imgs, limit)
-    paths = df["path"][idx].to_list()
-    update_state("IMGS", paths)
-    st.experimental_rerun() 
+    paths = exp.table.to_pandas()["path"][idx].to_list()
+    update_state(f"IMGS_{data}", paths)
     print("updated IMGS")
 
             
 
-def layout(): 
-    st.set_page_config(layout='wide')
-    col1, col2 = st.columns([0.75, 0.25], gap="small")
+def layout():
+    st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
+    set_page_dims()
+    # staging area
+    selected_staged_imgs = []
+    if st.session_state.get(f"STAGED_IMGS"):
+        staged_imgs = st.session_state[f"STAGED_IMGS"]
+        total_staged_imgs = len(staged_imgs)
+        col1, col2 = st.columns([0.8, 0.2], gap="small")
+        with col1:
+            selected_staged_imgs = image_select(f"Staged samples: {total_staged_imgs}", images=staged_imgs, use_container_width=False)
+        with col2:
+            staging_area_form(selected_staged_imgs, data="staging_area")
+        
+    # Dataset tabs
+    cfgs = _get_config()
+    tabs = st.tabs([cfg["data"].split(".")[0] for cfg in cfgs])
+    for idx, tab in enumerate(tabs):
+        with tab:
+            data = cfgs[idx]["data"].split(".")[0]
+            col1, col2 = st.columns([0.75, 0.25], gap="small")
 
-    reset_to_init_state()
-    with col1: 
-        subcol1, subcol2 = st.columns([0.2, 0.8])
-        with subcol1:
-            num = st.number_input("Max Images Displayed", min_value=0, max_value=len(st.session_state.IMGS), value=min(250, len(st.session_state.IMGS)))
-        query_form() 
+            reset_to_init_state()
 
-        if st.session_state.IMGS:
-            selected_imgs = image_select(f"Total samples: {len(st.session_state.IMGS)}", images=st.session_state.IMGS[0:num], indices=st.session_state.SELECTED_IMGS, use_container_width=False) #noqa
+            total_imgs = len(st.session_state[f"IMGS_{data}"])
+            imgs = st.session_state[f"IMGS_{data}"]
+            exp = st.session_state[f"EXPLORER_{data}"]
+            with col1: 
+                subcol1, subcol2 = st.columns([0.2, 0.8])
+                with subcol1:
+                    num = st.number_input("Max Images Displayed", min_value=0, max_value=total_imgs, value=min(250, total_imgs), key=widget_key("num_imgs_displayed", data))
+                query_form(data) 
 
-    with col2:
-        similarity_form(selected_imgs)
-        display_labels = st.checkbox("Labels", value=False) #noqa
-        st.write("Coming Soon: ")
-        st.write("Export/Merge Dataset(s)")
+                if total_imgs:
+                    selected_imgs = image_select(f"Total samples: {total_imgs}", images=imgs[0:num], use_container_width=False)
+
+            with col2:
+                similarity_form(selected_imgs, selected_staged_imgs, data)
+                display_labels = st.checkbox("Labels", value=False, key=widget_key("labels", data))
+                add_to_staging = st.button("Add to Staging", key=widget_key("staging", data), disabled=not selected_imgs)
+                
+                if add_to_staging:
+                    update_state("STAGED_IMGS", st.session_state["STAGED_IMGS"] + selected_imgs)
 
 
 def launch():

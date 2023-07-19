@@ -448,14 +448,17 @@ class Explorer:
 
         return result
 
-    def dash(self):
+    def dash(self, exps: list):
         """
         Launches a dashboard to visualize the dataset.
         """
         Path(TEMP_CONFIG_PATH).parent.mkdir(exist_ok=True, parents=True)
         with open(TEMP_CONFIG_PATH, "w+") as file:
-            json.dump(self.config, file)
-
+            config_list = [self.config]
+            for exp in exps:
+                config_list.append(exp.config)
+            json.dump(config_list, file)
+            
         launch()
 
     @property
