@@ -32,5 +32,7 @@ repos:
     hooks:
     -   id: black
 ci:
+    autofix_prs: true
+    autoupdate_schedule: monthly
     autofix_commit_msg: "fix(pre_commit): 🎨 auto format pre-commit hooks"
     autoupdate_commit_msg: "fix(pre_commit): ⬆ pre_commit autoupdate"

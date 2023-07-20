@@ -80,7 +80,7 @@ class TestExplorer:
 
         paths = coco_exp.table.to_pandas()["path"].to_list()
         coco_exp.get_similar_imgs(paths, 10)
-        
+
     """
     # Not supported yet
     def test_copy_embeddings_from_table(self):

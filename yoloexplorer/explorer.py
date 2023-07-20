@@ -27,7 +27,7 @@ from yoloexplorer.config import TEMP_CONFIG_PATH
 
 SCHEMA = [
     "id",
-    #"img", # Make this optional; disabled by default. Not feasible unless we can have row_id/primary key to index 
+    # "img", # Make this optional; disabled by default. Not feasible unless we can have row_id/primary key to index
     "path",
     "cls",
     "labels",
@@ -102,7 +102,7 @@ class Explorer:
         trainset = trainset if isinstance(trainset, list) else [trainset]
         self.trainset = trainset
         self.verbose = verbose
-        
+
         dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
         batch_size = dataset.ni  # TODO: fix this hardcoding
         db = self._connect()
@@ -184,19 +184,26 @@ class Explorer:
             img = img
         elif isinstance(img, bytes):
             img = decode(img)
-        elif isinstance(img, list): # exceptional case for batch search from dash
+        elif isinstance(img, list):  # exceptional case for batch search from dash
             df = self.table.to_pandas().set_index("path")
-            array = df.loc[img]["vector"].to_list()
-            embeddings = np.array(array)
-            if len(embeddings) > 1:
-                embeddings = np.mean(embeddings, axis=0)
-            else:
-                embeddings = np.squeeze(embeddings)
+            array = None
+            try:
+                array = df.loc[img]["vector"].to_list()
+                embeddings = np.array(array)
+            except KeyError:
+                pass
         else:
-            LOGGER.error("img should be index from the table(int) or path of an image (str or Path)")
+            LOGGER.error("img should be index from the table(int), path of an image (str or Path), or bytes")
             return
+
         if embeddings is None:
-            embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
+            if isinstance(img, list):
+                embeddings = np.array([self.predictor.embed(i).squeeze().cpu().numpy() for i in img])
+            else:
+                embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
+        if len(embeddings.shape) > 1:
+            embeddings = np.mean(embeddings, axis=0)
+
         sim = self.table.search(embeddings).limit(n).to_df()
         return sim["path"].to_list(), sim["id"].to_list()
 
@@ -447,24 +454,22 @@ class Explorer:
 
         return result
 
-    def dash(self):
+    def dash(self, exps: list):
         """
         Launches a dashboard to visualize the dataset.
         """
         Path(TEMP_CONFIG_PATH).parent.mkdir(exist_ok=True, parents=True)
         with open(TEMP_CONFIG_PATH, "w+") as file:
-            json.dump(self.config, file)
+            config_list = [self.config]
+            for exp in exps:
+                config_list.append(exp.config)
+            json.dump(config_list, file)
 
         launch()
 
     @property
     def config(self):
-        return {
-            "project": self.project,
-            "model": self.model,
-            "device": self.device,
-            "data": self.data
-        }
+        return {"project": self.project, "model": self.model, "device": self.device, "data": self.data}
 
     def _log_training_cmd(self, data_path):
         LOGGER.info(
