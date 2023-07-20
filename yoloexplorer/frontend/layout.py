@@ -118,7 +118,6 @@ def layout():
                 query_form(data) 
 
                 if total_imgs:
-                    st.write(f"Total samples: {len(imgs)} (displayed: {num})")
                     selected_imgs = image_select(f"Total samples: {total_imgs}", images=imgs[0:num], use_container_width=False)
 
             with col2:
