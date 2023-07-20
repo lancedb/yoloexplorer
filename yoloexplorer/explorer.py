@@ -201,10 +201,8 @@ class Explorer:
                 embeddings = np.array([self.predictor.embed(i).squeeze().cpu().numpy() for i in img])
             else:
                 embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
-        if len(embeddings) > 1:
+        if len(embeddings.shape) > 1:
             embeddings = np.mean(embeddings, axis=0)
-        else:
-            embeddings = np.squeeze(embeddings)
         
         sim = self.table.search(embeddings).limit(n).to_df()
         return sim["path"].to_list(), sim["id"].to_list()
