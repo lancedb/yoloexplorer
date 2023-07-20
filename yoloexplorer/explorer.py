@@ -27,7 +27,7 @@ from yoloexplorer.config import TEMP_CONFIG_PATH
 
 SCHEMA = [
     "id",
-    "img",
+    #"img", # Make this optional; disabled by default. Not feasible unless we can have row_id/primary key to index 
     "path",
     "cls",
     "labels",
@@ -89,7 +89,7 @@ class Explorer:
         if data:
             self.dataset_info = get_dataset_info(self.data)
 
-    def build_embeddings(self, batch_size=1000, verbose=False, force=False):
+    def build_embeddings(self, batch_size=1000, verbose=False, force=False, store_imgs=False):
         """
         Builds the dataset in LanceDB table format
 
@@ -102,7 +102,7 @@ class Explorer:
         trainset = trainset if isinstance(trainset, list) else [trainset]
         self.trainset = trainset
         self.verbose = verbose
-
+        
         dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
         batch_size = dataset.ni  # TODO: fix this hardcoding
         db = self._connect()
@@ -118,7 +118,6 @@ class Explorer:
 
         table_data = defaultdict(list)
         for idx, batch in enumerate(dataset):
-            batch.pop("img")
             batch["id"] = idx
             batch["cls"] = batch["cls"].flatten().int().tolist()
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
@@ -134,11 +133,11 @@ class Explorer:
                     val = val.tolist()
                 table_data[key].append(val)
 
-            table_data["img"].append(encode(batch["im_file"]))
+            table_data["img"].append(encode(batch["im_file"])) if store_imgs else None
 
             if len(table_data[key]) == batch_size or idx == dataset.ni - 1:
                 df = pd.DataFrame(table_data)
-                df = with_embeddings(self._embedding_func, df, "img", batch_size=batch_size)
+                df = with_embeddings(self._embedding_func, df, "path", batch_size=batch_size)
                 if self.table:
                     self.table.add(table_data)
                 else:
@@ -199,7 +198,7 @@ class Explorer:
         if embeddings is None:
             embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
         sim = self.table.search(embeddings).limit(n).to_df()
-        return sim["img"].to_list(), sim["id"].to_list()
+        return sim["path"].to_list(), sim["id"].to_list()
 
     def plot_similar_imgs(self, img, n=10):
         """
@@ -220,7 +219,7 @@ class Explorer:
         resized_images = []
         df = self.sql(query) if query else self.table.to_pandas().iloc[ids]
         for _, row in df.iterrows():
-            img = decode(row["img"])
+            img = cv2.imread(row["path"])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             if labels:
                 ann = Annotator(img)
@@ -513,7 +512,6 @@ class Explorer:
     def _embedding_func(self, imgs):
         embeddings = []
         for img in tqdm(imgs):
-            img = decode(img)
             embeddings.append(self.predictor.embed(img, verbose=self.verbose).squeeze().cpu().numpy())
         return embeddings
 
