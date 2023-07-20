@@ -27,7 +27,7 @@ from yoloexplorer.config import TEMP_CONFIG_PATH
 
 SCHEMA = [
     "id",
-    #"img", # Make this optional; disabled by default. Not feasible unless we can have row_id/primary key to index 
+    # "img", # Make this optional; disabled by default. Not feasible unless we can have row_id/primary key to index
     "path",
     "cls",
     "labels",
@@ -102,7 +102,7 @@ class Explorer:
         trainset = trainset if isinstance(trainset, list) else [trainset]
         self.trainset = trainset
         self.verbose = verbose
-        
+
         dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
         batch_size = dataset.ni  # TODO: fix this hardcoding
         db = self._connect()
@@ -184,7 +184,7 @@ class Explorer:
             img = img
         elif isinstance(img, bytes):
             img = decode(img)
-        elif isinstance(img, list): # exceptional case for batch search from dash
+        elif isinstance(img, list):  # exceptional case for batch search from dash
             df = self.table.to_pandas().set_index("path")
             array = None
             try:
@@ -203,7 +203,7 @@ class Explorer:
                 embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
         if len(embeddings.shape) > 1:
             embeddings = np.mean(embeddings, axis=0)
-        
+
         sim = self.table.search(embeddings).limit(n).to_df()
         return sim["path"].to_list(), sim["id"].to_list()
 
@@ -464,17 +464,12 @@ class Explorer:
             for exp in exps:
                 config_list.append(exp.config)
             json.dump(config_list, file)
-            
+
         launch()
 
     @property
     def config(self):
-        return {
-            "project": self.project,
-            "model": self.model,
-            "device": self.device,
-            "data": self.data
-        }
+        return {"project": self.project, "model": self.model, "device": self.device, "data": self.data}
 
     def _log_training_cmd(self, data_path):
         LOGGER.info(

@@ -8,12 +8,12 @@ FILE = Path(__file__).resolve()
 PARENT = FILE.parent  # root directory
 README = (PARENT / "README.md").read_text(encoding="utf-8")
 REQUIREMENTS = [
-"lancedb",
-"duckdb",
-"scikit-learn",
-"streamlit",
-"streamlit-dash",
-"ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings"
+    "lancedb",
+    "duckdb",
+    "scikit-learn",
+    "streamlit",
+    "streamlit-dash",
+    "ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings",
 ]
 
 

@@ -4,6 +4,7 @@ import streamlit as st
 def widget_key(action, data):
     return f"form_{action}_on_{data}"
 
+
 def init_states(config_list):
     for config in config_list:
         data = config["data"].split(".")[0]
