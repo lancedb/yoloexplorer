@@ -10,9 +10,9 @@ def init_states(config_list):
         st.session_state[f"EXPLORER_{data}"] = None
         st.session_state[f"IMGS_{data}"] = []
         st.session_state[f"SELECTED_IMGS_{data}"] = []
-    st.session_state[f"STAGED_IMGS"] = []
+    st.session_state["STAGED_IMGS"] = set()
+    st.session_state["PRIMARY_DATASET"] = config_list[0]["data"].split(".")[0]
 
 
-def update_state(state, value, rerun=True):
+def update_state(state, value):
     st.session_state[state] = value
-    st.experimental_rerun() if rerun else None

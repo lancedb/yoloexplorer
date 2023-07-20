@@ -30,8 +30,8 @@ def reset_to_init_state():
         for idx, cfg in enumerate(cfgs):
             data = cfg["data"].split(".")[0]
             exp = _get_dataset(idx)
-            update_state(f"EXPLORER_{data}", exp, rerun=False)
-            update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list(), rerun=False)
+            update_state(f"EXPLORER_{data}", exp)
+            update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list())
 
 def query_form(data):
     with st.form(widget_key("query", data)):
@@ -39,12 +39,8 @@ def query_form(data):
         with col1:
             query = st.text_input("Query", "", label_visibility="collapsed")
         with col2:
-            submitted = st.form_submit_button("Query")
-        if submitted:
-            if query:
-                exp = st.session_state[f"EXPLORER_{data}"]
-                df = exp.sql(query)
-                update_state(f"IMGS_{data}", df["path"].to_list(), rerun=False)
+            st.form_submit_button("Query", on_click=run_sql_query, args=(data, query))
+
 
 def similarity_form(selected_imgs, selected_staged_imgs, data):
     st.write("Similarity Search")
@@ -57,36 +53,36 @@ def similarity_form(selected_imgs, selected_staged_imgs, data):
         with subcol2:
             disabled = len(selected_imgs) and len(selected_staged_imgs) 
             st.write("Selected: ", len(selected_imgs))
-            submitted = st.form_submit_button("Search", disabled=disabled)
+            st.form_submit_button("Search", disabled=disabled, on_click=find_similar_imgs, args=(data, selected_staged_imgs or selected_imgs, limit ))
             if disabled:
                 st.error("Cannot search from staging and dataset")
 
-        if submitted:
-            imgs = selected_staged_imgs or selected_imgs
-            find_similar_imgs(data, imgs, limit)
 
-
-def staging_area_form(selected_imgs, data):
+def staging_area_form(data, selected_imgs):
     st.write("Staging Area")
     with st.form(widget_key("staging_area", data)):
-        remove = st.form_submit_button(":wastebasket:", disabled=len(selected_imgs) == 0)
-        clear = st.form_submit_button("Clear")
-        if remove:
-            staged_imgs = st.session_state[f"STAGED_IMGS"]
-            [staged_imgs.remove(img) for img in selected_imgs]
-            update_state(f"STAGED_IMGS", staged_imgs)
+        staged_imgs = set(st.session_state[f"STAGED_IMGS"]) - set(selected_imgs)
+        st.form_submit_button(":wastebasket:", disabled=len(selected_imgs) == 0, on_click=update_state, args=("STAGED_IMGS", staged_imgs))
+        st.form_submit_button("Clear", on_click=update_state, args=("STAGED_IMGS", set()))
 
-        if clear:
-            update_state(f"STAGED_IMGS", [])
 
 def find_similar_imgs(data, imgs, limit=25):
     exp = st.session_state[f"EXPLORER_{data}"]
     _, idx = exp.get_similar_imgs(imgs, limit)
     paths = exp.table.to_pandas()["path"][idx].to_list()
     update_state(f"IMGS_{data}", paths)
-    print("updated IMGS")
 
-            
+
+def run_sql_query(data, query):
+    if query.rstrip().lstrip():
+        exp = st.session_state[f"EXPLORER_{data}"]
+        df = exp.sql(query)
+        update_state(f"IMGS_{data}", df["path"].to_list())
+
+def remove_imgs(data, imgs):
+    exp = st.session_state[f"EXPLORER_{data}"]
+    exp.remove_imgs(imgs)
+    update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list())
 
 def layout():
     st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
@@ -98,9 +94,9 @@ def layout():
         total_staged_imgs = len(staged_imgs)
         col1, col2 = st.columns([0.8, 0.2], gap="small")
         with col1:
-            selected_staged_imgs = image_select(f"Staged samples: {total_staged_imgs}", images=staged_imgs, use_container_width=False)
+            selected_staged_imgs = image_select(f"Staged samples: {total_staged_imgs}", images=list(staged_imgs), use_container_width=False)
         with col2:
-            staging_area_form(selected_staged_imgs, data="staging_area")
+            staging_area_form(data="staging_area", selected_imgs=selected_staged_imgs)
         
     # Dataset tabs
     cfgs = _get_config()
@@ -122,15 +118,19 @@ def layout():
                 query_form(data) 
 
                 if total_imgs:
-                    selected_imgs = image_select(f"Total samples: {total_imgs}", images=imgs[0:num], use_container_width=False)
+                    selected_imgs = image_select(f"Total samples: {total_imgs}", images=imgs[0:num], return_value="index", use_container_width=False)
 
             with col2:
                 similarity_form(selected_imgs, selected_staged_imgs, data)
-                display_labels = st.checkbox("Labels", value=False, key=widget_key("labels", data))
-                add_to_staging = st.button("Add to Staging", key=widget_key("staging", data), disabled=not selected_imgs)
+                total_staged_imgs = set(st.session_state["STAGED_IMGS"])
+                total_staged_imgs.update(selected_imgs)
                 
-                if add_to_staging:
-                    update_state("STAGED_IMGS", st.session_state["STAGED_IMGS"] + selected_imgs)
+                display_labels = st.checkbox("Labels", value=False, key=widget_key("labels", data))
+                st.button("Add to Staging", key=widget_key("staging", data), disabled=not selected_imgs, on_click=update_state, args=("STAGED_IMGS", total_staged_imgs))
+
+                #if data == st.session_state["PRIMARY_DATASET"]:
+                #    st.button(":wastebasket:", key=widget_key("delete", data), on_click=remove_imgs, args=(data, selected_imgs), disabled=not selected_imgs or (len(selected_imgs) and len(selected_staged_imgs)))
+
 
 
 def launch():
