@@ -5,7 +5,6 @@ import streamlit as st
 from streamlit_dash import image_select
 from yoloexplorer import config
 from yoloexplorer.frontend.states import init_states, update_state, widget_key
-from yoloexplorer.frontend.styles.base import set_page_dims
 
 @st.cache_data
 def _get_config():
@@ -53,10 +52,11 @@ def similarity_form(selected_imgs, selected_staged_imgs, data):
         with subcol2:
             disabled = len(selected_imgs) and len(selected_staged_imgs) 
             st.write("Selected: ", len(selected_imgs))
-            st.form_submit_button("Search", disabled=disabled, on_click=find_similar_imgs, args=(data, selected_staged_imgs or selected_imgs, limit ))
+            search = st.form_submit_button("Search", disabled=disabled)
             if disabled:
                 st.error("Cannot search from staging and dataset")
-
+            if search:
+                find_similar_imgs(data, selected_staged_imgs or selected_imgs, limit)
 
 def staging_area_form(data, selected_imgs):
     st.write("Staging Area")
@@ -71,6 +71,7 @@ def find_similar_imgs(data, imgs, limit=25):
     _, idx = exp.get_similar_imgs(imgs, limit)
     paths = exp.table.to_pandas()["path"][idx].to_list()
     update_state(f"IMGS_{data}", paths)
+    st.experimental_rerun()
 
 
 def run_sql_query(data, query):
@@ -81,12 +82,12 @@ def run_sql_query(data, query):
 
 def remove_imgs(data, imgs):
     exp = st.session_state[f"EXPLORER_{data}"]
-    exp.remove_imgs(imgs)
+    ids = exp.table.to_pandas().set_index("path").loc[imgs]["id"].to_list()
+    exp.remove_imgs(ids)
     update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list())
 
 def layout():
     st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
-    set_page_dims()
     # staging area
     selected_staged_imgs = []
     if st.session_state.get(f"STAGED_IMGS"):
@@ -110,7 +111,6 @@ def layout():
 
             total_imgs = len(st.session_state[f"IMGS_{data}"])
             imgs = st.session_state[f"IMGS_{data}"]
-            exp = st.session_state[f"EXPLORER_{data}"]
             with col1: 
                 subcol1, subcol2 = st.columns([0.2, 0.8])
                 with subcol1:
@@ -118,7 +118,8 @@ def layout():
                 query_form(data) 
 
                 if total_imgs:
-                    selected_imgs = image_select(f"Total samples: {total_imgs}", images=imgs[0:num], return_value="index", use_container_width=False)
+                    st.write(f"Total samples: {len(imgs)} (displayed: {num})")
+                    selected_imgs = image_select(f"Total samples: {total_imgs}", images=imgs[0:num], use_container_width=False)
 
             with col2:
                 similarity_form(selected_imgs, selected_staged_imgs, data)
@@ -128,8 +129,8 @@ def layout():
                 display_labels = st.checkbox("Labels", value=False, key=widget_key("labels", data))
                 st.button("Add to Staging", key=widget_key("staging", data), disabled=not selected_imgs, on_click=update_state, args=("STAGED_IMGS", total_staged_imgs))
 
-                #if data == st.session_state["PRIMARY_DATASET"]:
-                #    st.button(":wastebasket:", key=widget_key("delete", data), on_click=remove_imgs, args=(data, selected_imgs), disabled=not selected_imgs or (len(selected_imgs) and len(selected_staged_imgs)))
+                if data == st.session_state["PRIMARY_DATASET"]:
+                    st.button(":wastebasket:", key=widget_key("delete", data), on_click=remove_imgs, args=(data, selected_imgs), disabled=not selected_imgs or (len(selected_imgs) and len(selected_staged_imgs)))
 
 
 

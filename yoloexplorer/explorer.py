@@ -186,17 +186,26 @@ class Explorer:
             img = decode(img)
         elif isinstance(img, list): # exceptional case for batch search from dash
             df = self.table.to_pandas().set_index("path")
-            array = df.loc[img]["vector"].to_list()
-            embeddings = np.array(array)
-            if len(embeddings) > 1:
-                embeddings = np.mean(embeddings, axis=0)
-            else:
-                embeddings = np.squeeze(embeddings)
+            array = None
+            try:
+                array = df.loc[img]["vector"].to_list()
+                embeddings = np.array(array)
+            except KeyError:
+                pass
         else:
-            LOGGER.error("img should be index from the table(int) or path of an image (str or Path)")
+            LOGGER.error("img should be index from the table(int), path of an image (str or Path), or bytes")
             return
+
         if embeddings is None:
-            embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
+            if isinstance(img, list):
+                embeddings = np.array([self.predictor.embed(i).squeeze().cpu().numpy() for i in img])
+            else:
+                embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
+        if len(embeddings) > 1:
+            embeddings = np.mean(embeddings, axis=0)
+        else:
+            embeddings = np.squeeze(embeddings)
+        
         sim = self.table.search(embeddings).limit(n).to_df()
         return sim["path"].to_list(), sim["id"].to_list()
 
