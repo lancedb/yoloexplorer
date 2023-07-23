@@ -430,7 +430,9 @@ class Explorer:
         db.drop_table(self.temp_table_name)
 
         LOGGER.info("Changes persisted to the dataset.")
-        self._log_training_cmd(Path(path / datafile_name).relative_to(Path.cwd()).as_posix())
+        log = self._log_training_cmd(Path(path / datafile_name).relative_to(Path.cwd()).as_posix())
+
+        return log
 
     def log_status(self):
         # TODO: Pretty print log status
@@ -454,16 +456,20 @@ class Explorer:
 
         return result
 
-    def dash(self, exps: list):
+    def dash(self, exps: list, analysis: bool = False):
         """
         Launches a dashboard to visualize the dataset.
         """
+        config = {}
         Path(TEMP_CONFIG_PATH).parent.mkdir(exist_ok=True, parents=True)
         with open(TEMP_CONFIG_PATH, "w+") as file:
-            config_list = [self.config]
+            config_exp = [self.config]
             for exp in exps:
-                config_list.append(exp.config)
-            json.dump(config_list, file)
+                config_exp.append(exp.config)
+            config["exps"] = config_exp
+            config["analysis"] = analysis
+
+            json.dump(config, file)
 
         launch()
 
@@ -472,10 +478,14 @@ class Explorer:
         return {"project": self.project, "model": self.model, "device": self.device, "data": self.data}
 
     def _log_training_cmd(self, data_path):
-        LOGGER.info(
+        success_log = (
             f'{colorstr("LanceDB: ") }New dataset created successfully! Run the following command to train a model:'
         )
-        LOGGER.info(f"yolo train data={data_path} epochs=10")
+        train_cmd = f"yolo train {self.project} {self.model} {data_path} --epochs 10"
+        success_log = success_log + "\n" + train_cmd
+        LOGGER.info(success_log)
+
+        return train_cmd
 
     def _connect(self):
         db = lancedb.connect(self.project)

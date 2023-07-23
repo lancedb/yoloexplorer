@@ -1,4 +1,3 @@
-import time
 import json
 import subprocess
 
@@ -12,7 +11,7 @@ from yoloexplorer.frontend.states import init_states, update_state, widget_key
 def _get_config():
     with open(config.TEMP_CONFIG_PATH) as json_file:
         data = json.load(json_file)
-    return data
+    return data["exps"]
 
 
 @st.cache_data
@@ -35,7 +34,6 @@ def _get_primary_dataset():
 
 def reset_to_init_state():
     if st.session_state.get(f"STAGED_IMGS") is None:  # if app is not initialized TODO: better check
-        print("Initializing app...")
         cfgs = _get_config()
         init_states(cfgs)
         for idx, cfg in enumerate(cfgs):
@@ -67,14 +65,11 @@ def similarity_form(selected_imgs, selected_staged_imgs, data):
         with subcol2:
             disabled = len(selected_imgs) and len(selected_staged_imgs)
             st.write("Selected: ", len(selected_imgs))
-            st.form_submit_button(
-                "Search",
-                disabled=disabled,
-                on_click=find_similar_imgs,
-                args=(data, selected_imgs or selected_staged_imgs, limit),
-            )
+            submit = st.form_submit_button("Search", disabled=disabled)
             if disabled:
                 st.error("Cannot search from staging and dataset")
+            if submit:
+                find_similar_imgs(data, selected_imgs or selected_staged_imgs, limit)
 
 
 def staging_area_form(data, selected_imgs):
@@ -98,21 +93,22 @@ def selected_options_form(data, selected_imgs, selected_staged_imgs, total_stage
         col1, col2 = st.columns([1, 1])
         with col1:
             st.form_submit_button(
-                "Add to Staging",
+                "Add to Stage",
                 # key=widget_key("staging", data),
-                disabled=not selected_imgs,
                 on_click=add_to_staging,
                 args=("STAGED_IMGS", total_staged_imgs),
+                disabled=not selected_imgs,
             )
 
         with col2:
             if data == st.session_state["PRIMARY_DATASET"]:
                 st.form_submit_button(
                     ":wastebasket:",
+                    disabled=not selected_imgs or (len(selected_imgs) and len(selected_staged_imgs)),
                     on_click=remove_imgs,
                     args=(data, selected_imgs),
-                    disabled=not selected_imgs or (len(selected_imgs) and len(selected_staged_imgs)),
                 )
+
             else:
                 st.form_submit_button(
                     f"Add to {st.session_state['PRIMARY_DATASET']}",
@@ -132,12 +128,12 @@ def persist_reset_form():
             st.form_submit_button("Persist", on_click=update_state, args=("PERSISTING", True))
 
 
-def find_similar_imgs(data, imgs, limit=25):
+def find_similar_imgs(data, imgs, limit=25, rerun=False):
     exp = st.session_state[f"EXPLORER_{data}"]
     _, idx = exp.get_similar_imgs(imgs, limit)
     paths = exp.table.to_pandas()["path"][idx].to_list()
     update_state(f"IMGS_{data}", paths)
-    # st.experimental_rerun()
+    st.experimental_rerun()
 
 
 def run_sql_query(data, query):
@@ -158,6 +154,7 @@ def remove_imgs(data, imgs):
     idxs = exp.table.to_pandas().set_index("path").loc[imgs]["id"].to_list()
     exp.remove_imgs(idxs)
     update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list())
+    # st.experimental_rerun()
 
 
 def add_imgs(from_data, imgs):
@@ -179,11 +176,30 @@ def reset():
 
 def persist_changes():
     exp = _get_primary_dataset()
+    log = None
     with st.spinner("Creating new dataset..."):
-        exp.persist()
-    st.success("Dataset created successfully! Auto-reload in 30 seconds...")
+        log = exp.persist()
+    st.success("Dataset created successfully!")
+    st.code(log, language="shell")
     update_state("PERSISTING", False)
     st.button("Refresh", on_click=update_state, args=("STAGED_IMGS", None))
+
+
+def rerender_button(data):
+    col1, col2, col3 = st.columns([0.26, 0.3, 0.1])
+    with col1:
+        pass
+    with col2:
+        st.button(
+            "Render Imgs :arrows_counterclockwise:",
+            key=widget_key("render_imgs", data),
+            help="""
+        Imgs might not be rendered automatically in some cases to save memory when stage area is used.
+        Click this button to force render imgs.
+        """,
+        )
+    with col3:
+        pass
 
 
 def layout():
@@ -205,7 +221,6 @@ def layout():
             )
         with col2:
             staging_area_form(data="staging_area", selected_imgs=selected_staged_imgs)
-
     # Dataset tabs
     cfgs = _get_config()
     tabs = st.tabs([cfg["data"].split(".")[0] for cfg in cfgs])
@@ -236,6 +251,7 @@ def layout():
                     select_all = st.checkbox("Select All", value=False, key=widget_key("select_all", data))
 
                 query_form(data)
+                selected_imgs = []
                 if total_imgs:
                     imgs_displayed = imgs[start_idx : start_idx + num]
                     selected_imgs = image_select(
@@ -244,6 +260,8 @@ def layout():
                         use_container_width=False,
                         indices=[i for i in range(num)] if select_all else None,
                     )
+                    if st.session_state.get(f"STAGED_IMGS"):
+                        rerender_button(data)
 
             with col2:
                 similarity_form(selected_imgs, selected_staged_imgs, data)
