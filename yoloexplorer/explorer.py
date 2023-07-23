@@ -468,7 +468,7 @@ class Explorer:
                 config_exp.append(exp.config)
             config["exps"] = config_exp
             config["analysis"] = analysis
-    
+
             json.dump(config, file)
 
         launch()
@@ -478,7 +478,9 @@ class Explorer:
         return {"project": self.project, "model": self.model, "device": self.device, "data": self.data}
 
     def _log_training_cmd(self, data_path):
-        success_log = f'{colorstr("LanceDB: ") }New dataset created successfully! Run the following command to train a model:'
+        success_log = (
+            f'{colorstr("LanceDB: ") }New dataset created successfully! Run the following command to train a model:'
+        )
         train_cmd = f"yolo train {self.project} {self.model} {data_path} --epochs 10"
         success_log = success_log + "\n" + train_cmd
         LOGGER.info(success_log)

@@ -9,17 +9,17 @@ import plotly.express as px
 from yoloexplorer import config
 from yoloexplorer.frontend.datasets import _get_primary_dataset
 
+
 @st.cache_resource
 def reduce_dim(df, alg):
     embeddings = np.array(df["vector"].to_list())
-    if alg == 'TSNE':
+    if alg == "TSNE":
         tsne = TSNE(n_components=2, random_state=0)
         embeddings = tsne.fit_transform(embeddings)
-    elif alg == 'PCA':
+    elif alg == "PCA":
         pca = PCA(n_components=2)
         embeddings = pca.fit_transform(embeddings)
     return embeddings
-
 
 
 def embeddings():
@@ -29,19 +29,17 @@ def embeddings():
     with col1:
         st.dataframe(df, use_container_width=True)
     with col2:
-        option = st.selectbox(
-    'Dim Reducer Algorithm',
-    ('TSNE', 'PCA', 'UMAP (Coming soon)'))
-        if option == 'TSNE':
-            embeddings = reduce_dim(df, 'TSNE')
-        elif option == 'PCA':
-            embeddings = reduce_dim(df, 'TSNE')
-        elif option == 'UMAP (Coming soon)':
+        option = st.selectbox("Dim Reducer Algorithm", ("TSNE", "PCA", "UMAP (Coming soon)"))
+        if option == "TSNE":
+            embeddings = reduce_dim(df, "TSNE")
+        elif option == "PCA":
+            embeddings = reduce_dim(df, "TSNE")
+        elif option == "UMAP (Coming soon)":
             st.write("Coming soon")
-        
-        fig = px.scatter(x=embeddings[:,0], y=embeddings[:,1])
+
+        fig = px.scatter(x=embeddings[:, 0], y=embeddings[:, 1])
         st.plotly_chart(fig, use_container_width=True)
 
-    
+
 if __name__ == "__main__":
     embeddings()

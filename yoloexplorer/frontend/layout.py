@@ -7,6 +7,7 @@ from streamlit_dash import image_select
 from yoloexplorer import config
 from yoloexplorer.frontend.states import init_states, update_state, widget_key
 
+
 @st.cache_data
 def _get_config():
     with open(config.TEMP_CONFIG_PATH) as json_file:
@@ -24,14 +25,16 @@ def _get_dataset(idx=0):
 
     return exp
 
+
 def _get_primary_dataset():
     data = st.session_state["PRIMARY_DATASET"]
     exp = st.session_state[f"EXPLORER_{data}"]
 
     return exp
 
+
 def reset_to_init_state():
-    if st.session_state.get(f"STAGED_IMGS") is None: # if app is not initialized TODO: better check
+    if st.session_state.get(f"STAGED_IMGS") is None:  # if app is not initialized TODO: better check
         print("Initializing app...")
         cfgs = _get_config()
         init_states(cfgs)
@@ -53,7 +56,6 @@ def query_form(data):
             run_sql_query(data, query)
 
 
-
 def similarity_form(selected_imgs, selected_staged_imgs, data):
     st.write("Similarity Search")
     with st.form(widget_key("similarity", data)):
@@ -65,9 +67,15 @@ def similarity_form(selected_imgs, selected_staged_imgs, data):
         with subcol2:
             disabled = len(selected_imgs) and len(selected_staged_imgs)
             st.write("Selected: ", len(selected_imgs))
-            st.form_submit_button("Search", disabled=disabled, on_click=find_similar_imgs, args=(data, selected_imgs or selected_staged_imgs, limit))
+            st.form_submit_button(
+                "Search",
+                disabled=disabled,
+                on_click=find_similar_imgs,
+                args=(data, selected_imgs or selected_staged_imgs, limit),
+            )
             if disabled:
                 st.error("Cannot search from staging and dataset")
+
 
 def staging_area_form(data, selected_imgs):
     st.write("Staging Area")
@@ -76,38 +84,43 @@ def staging_area_form(data, selected_imgs):
         staged_imgs = set(st.session_state[f"STAGED_IMGS"]) - set(selected_imgs)
         with col1:
             st.form_submit_button(
-            ":wastebasket:", disabled=len(selected_imgs) == 0, on_click=update_state, args=("STAGED_IMGS", staged_imgs)
+                ":wastebasket:",
+                disabled=len(selected_imgs) == 0,
+                on_click=update_state,
+                args=("STAGED_IMGS", staged_imgs),
             )
         with col2:
             st.form_submit_button("Clear", on_click=update_state, args=("STAGED_IMGS", set()))
+
 
 def selected_options_form(data, selected_imgs, selected_staged_imgs, total_staged_imgs):
     with st.form(widget_key("selected_options", data)):
         col1, col2 = st.columns([1, 1])
         with col1:
             st.form_submit_button(
-                    "Add to Staging",
-                    #key=widget_key("staging", data),
-                    disabled=not selected_imgs,
-                    on_click=add_to_staging,
-                    args=("STAGED_IMGS", total_staged_imgs),
-                )
-            
+                "Add to Staging",
+                # key=widget_key("staging", data),
+                disabled=not selected_imgs,
+                on_click=add_to_staging,
+                args=("STAGED_IMGS", total_staged_imgs),
+            )
+
         with col2:
             if data == st.session_state["PRIMARY_DATASET"]:
                 st.form_submit_button(
-                        ":wastebasket:",
-                        on_click=remove_imgs,
-                        args=(data, selected_imgs),
-                        disabled=not selected_imgs or (len(selected_imgs) and len(selected_staged_imgs)),
-                    )
+                    ":wastebasket:",
+                    on_click=remove_imgs,
+                    args=(data, selected_imgs),
+                    disabled=not selected_imgs or (len(selected_imgs) and len(selected_staged_imgs)),
+                )
             else:
                 st.form_submit_button(
-                        f"Add to {st.session_state['PRIMARY_DATASET']}",
-                        on_click=add_imgs,
-                        args=(data, selected_imgs),
-                        disabled=not selected_imgs,
-                    )
+                    f"Add to {st.session_state['PRIMARY_DATASET']}",
+                    on_click=add_imgs,
+                    args=(data, selected_imgs),
+                    disabled=not selected_imgs,
+                )
+
 
 def persist_reset_form():
     with st.form(widget_key("persist_reset", "PRIMARY_DATASET")):
@@ -117,13 +130,14 @@ def persist_reset_form():
 
         with col2:
             st.form_submit_button("Persist", on_click=update_state, args=("PERSISTING", True))
-    
+
+
 def find_similar_imgs(data, imgs, limit=25):
     exp = st.session_state[f"EXPLORER_{data}"]
     _, idx = exp.get_similar_imgs(imgs, limit)
     paths = exp.table.to_pandas()["path"][idx].to_list()
     update_state(f"IMGS_{data}", paths)
-    #st.experimental_rerun()
+    # st.experimental_rerun()
 
 
 def run_sql_query(data, query):
@@ -133,15 +147,18 @@ def run_sql_query(data, query):
         update_state(f"IMGS_{data}", df["path"].to_list())
         st.experimental_rerun()
 
+
 def add_to_staging(key, imgs):
     update_state(key, imgs)
-    #st.experimental_rerun()
+    # st.experimental_rerun()
+
 
 def remove_imgs(data, imgs):
     exp = st.session_state[f"EXPLORER_{data}"]
     idxs = exp.table.to_pandas().set_index("path").loc[imgs]["id"].to_list()
     exp.remove_imgs(idxs)
     update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list())
+
 
 def add_imgs(from_data, imgs):
     data = st.session_state["PRIMARY_DATASET"]
@@ -152,19 +169,22 @@ def add_imgs(from_data, imgs):
     update_state(f"IMGS_{data}", exp.table.to_pandas()["path"].to_list())
     update_state(f"SUCCESS_MSG", f"Added {len(imgs)} to {data}")
 
+
 def reset():
     data = st.session_state["PRIMARY_DATASET"]
     exp = st.session_state[f"EXPLORER_{data}"]
     exp.reset()
     update_state("STAGED_IMGS", None)
 
+
 def persist_changes():
     exp = _get_primary_dataset()
-    with st.spinner('Creating new dataset...'):
+    with st.spinner("Creating new dataset..."):
         exp.persist()
     st.success("Dataset created successfully! Auto-reload in 30 seconds...")
     update_state("PERSISTING", False)
     st.button("Refresh", on_click=update_state, args=("STAGED_IMGS", None))
+
 
 def layout():
     st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
@@ -209,16 +229,20 @@ def layout():
                         key=widget_key("num_imgs_displayed", data),
                     )
                 with subcol2:
-                    start_idx = st.number_input('Start Index', min_value=0, max_value=total_imgs, value=0, key=widget_key("start_idx", data))
+                    start_idx = st.number_input(
+                        "Start Index", min_value=0, max_value=total_imgs, value=0, key=widget_key("start_idx", data)
+                    )
                 with subcol3:
                     select_all = st.checkbox("Select All", value=False, key=widget_key("select_all", data))
-    
+
                 query_form(data)
                 if total_imgs:
-                    imgs_displayed = imgs[start_idx: start_idx+num]
+                    imgs_displayed = imgs[start_idx : start_idx + num]
                     selected_imgs = image_select(
-                        f"Total samples: {total_imgs}", images=imgs_displayed, use_container_width=False,
-                        indices=[i for i in range(num)] if select_all else None
+                        f"Total samples: {total_imgs}",
+                        images=imgs_displayed,
+                        use_container_width=False,
+                        indices=[i for i in range(num)] if select_all else None,
                     )
 
             with col2:
