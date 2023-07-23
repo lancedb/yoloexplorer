@@ -11,7 +11,7 @@ from yoloexplorer.frontend.states import init_states, update_state, widget_key
 def _get_config():
     with open(config.TEMP_CONFIG_PATH) as json_file:
         data = json.load(json_file)
-    return data
+    return data["exps"]
 
 
 @st.cache_data
