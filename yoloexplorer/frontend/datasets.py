@@ -162,9 +162,11 @@ def reset():
 
 def persist_changes():
     exp = _get_primary_dataset()
+    log = None
     with st.spinner('Creating new dataset...'):
-        exp.persist()
-    st.success("Dataset created successfully! Auto-reload in 30 seconds...")
+        log = exp.persist()
+    st.success("Dataset created successfully!")
+    st.code(log, language="shell")
     update_state("PERSISTING", False)
     st.button("Refresh", on_click=update_state, args=("STAGED_IMGS", None))
 

@@ -430,7 +430,9 @@ class Explorer:
         db.drop_table(self.temp_table_name)
 
         LOGGER.info("Changes persisted to the dataset.")
-        self._log_training_cmd(Path(path / datafile_name).relative_to(Path.cwd()).as_posix())
+        log = self._log_training_cmd(Path(path / datafile_name).relative_to(Path.cwd()).as_posix())
+
+        return log
 
     def log_status(self):
         # TODO: Pretty print log status
@@ -476,10 +478,12 @@ class Explorer:
         return {"project": self.project, "model": self.model, "device": self.device, "data": self.data}
 
     def _log_training_cmd(self, data_path):
-        LOGGER.info(
-            f'{colorstr("LanceDB: ") }New dataset created successfully! Run the following command to train a model:'
-        )
-        LOGGER.info(f"yolo train data={data_path} epochs=10")
+        success_log = f'{colorstr("LanceDB: ") }New dataset created successfully! Run the following command to train a model:'
+        train_cmd = f"yolo train {self.project} {self.model} {data_path} --epochs 10"
+        success_log = success_log + "\n" + train_cmd
+        LOGGER.info(success_log)
+
+        return train_cmd
 
     def _connect(self):
         db = lancedb.connect(self.project)
