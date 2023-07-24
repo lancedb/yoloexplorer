@@ -36,9 +36,9 @@ exp.dash([coco_exp, coco8])
 </details>
 <details open>
 <summary>Query using SQL and semantic search, View dataset as pandas DF and explore embeddings</summary>
-  
+
 ![ezgif com-optimize (4)](https://github.com/lancedb/yoloexplorer/assets/15766192/b786e2f1-dc8e-411e-b13b-84b26ec50d41)
-  
+
 ![ezgif com-optimize (5)](https://github.com/lancedb/yoloexplorer/assets/15766192/38d42a38-810e-48f3-89ea-1ccf304a1047)
 
 </details>
