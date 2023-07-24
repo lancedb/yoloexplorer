@@ -12,10 +12,37 @@ Supports SQL filters, vector similarity search, native interface with Pandas and
 Try an example colab <a href="https://colab.research.google.com/github/lancedb/yoloexplorer/blob/main/examples/intro.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 
 🌟 NEW: Supports GUI Dashboard, Pythonic and notebook workflows
+### Dashboard Workflows
 <details open>
-<summary>Dashboard</summary>
-<img src="./yoloexplorer/assets/docs/dash_intro.gif" height=75% width=75% />
+<summary>Mutliple dataset support</summary>
+You can now explore multiple datasets, search across them, add/remove images across multiple datasets to enrich bad examples. Start training on new dataset within seconds.
+  Here's an example of using VOC, coco128 and coco8 datasets together with VOC being the primary.
+<pre>
+from yoloexplorer import Explorer
+
+exp = Explorer("VOC.yaml")
+exp.build_embeddings()
+
+coco_exp = Explorer("coco128.yaml")
+coco_exp.build_embeddings()
+ #Init coco8 similarly
+
+exp.dash([coco_exp, coco8])
+#Automatic analysis coming soon with dash(..., analysis=True)
+</pre>
+
+  ![ezgif com-optimize (3)](https://github.com/lancedb/yoloexplorer/assets/15766192/3422a536-138a-4fce-af2c-cef97f171aed)
+
 </details>
+<details open>
+<summary>Query using SQL and semantic search, View dataset as pandas DF and explore embeddings</summary>
+  
+![ezgif com-optimize (4)](https://github.com/lancedb/yoloexplorer/assets/15766192/b786e2f1-dc8e-411e-b13b-84b26ec50d41)
+  
+![ezgif com-optimize (5)](https://github.com/lancedb/yoloexplorer/assets/15766192/38d42a38-810e-48f3-89ea-1ccf304a1047)
+
+</details>
+
 <details open>
 <summary>Colab / Notebook</summary>
 <img src="./yoloexplorer/assets/docs/intro.gif" height=75% width=75% />
