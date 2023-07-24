@@ -456,7 +456,7 @@ class Explorer:
 
         return result
 
-    def dash(self, exps: list, analysis: bool = False):
+    def dash(self, exps = None, analysis = False):
         """
         Launches a dashboard to visualize the dataset.
         """
@@ -464,8 +464,9 @@ class Explorer:
         Path(TEMP_CONFIG_PATH).parent.mkdir(exist_ok=True, parents=True)
         with open(TEMP_CONFIG_PATH, "w+") as file:
             config_exp = [self.config]
-            for exp in exps:
-                config_exp.append(exp.config)
+            if exps:
+                for exp in exps:
+                    config_exp.append(exp.config)
             config["exps"] = config_exp
             config["analysis"] = analysis
 
