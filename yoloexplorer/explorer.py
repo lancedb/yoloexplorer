@@ -456,7 +456,7 @@ class Explorer:
 
         return result
 
-    def dash(self, exps = None, analysis = False):
+    def dash(self, exps=None, analysis=False):
         """
         Launches a dashboard to visualize the dataset.
         """
