@@ -9,8 +9,6 @@ Supports SQL filters, vector similarity search, native interface with Pandas and
 * Enrich datasets by adding more examples from another datasets
 * And more
 
-Try an example colab <a href="https://colab.research.google.com/github/lancedb/yoloexplorer/blob/main/examples/intro.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-
 🌟 NEW: Supports GUI Dashboard, Pythonic and notebook workflows
 ### Dashboard Workflows
 <details open>
