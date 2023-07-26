@@ -13,6 +13,7 @@ REQUIREMENTS = [
     "scikit-learn",
     "streamlit",
     "streamlit-dash",
+    "plotly",
     "ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings",
 ]
 
