@@ -173,7 +173,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+#build/
 develop-eggs/
 dist/
 downloads/
@@ -361,3 +361,4 @@ $RECYCLE.BIN/
 *.lnk
 
 run/
+node_modules/
