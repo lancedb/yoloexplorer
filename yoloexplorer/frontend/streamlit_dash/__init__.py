@@ -2,11 +2,14 @@ import base64
 import io
 import os
 from pathlib import Path
+import cv2
 
 import numpy as np
 import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
+
+from ultralytics.yolo.utils.plotting import Annotator, colors
 
 _RELEASE = True
 
@@ -44,6 +47,9 @@ def image_select(
     use_container_width: bool = True,
     return_value: str = "original",
     key: str = None,
+    bboxes = None,
+    labels = None,
+    classes = None
 ):
     """Shows several images and returns the image selected by the user.
 
@@ -61,7 +67,11 @@ def image_select(
             original object passed into `images` or the index of the selected image.
             Defaults to "original".
         key (str, optional): The key of the component. Defaults to None.
-
+        bboxes (list of list of float, optional): The bounding boxes to show on the
+            images. Defaults to None.
+        labels (list of str, optional): The labels to show on the bounding boxes.
+            Defaults to None.
+        classes (list of str, optional): The classes to show on the bounding boxes.
     Returns:
         (any): The image selected by the user (same object and type as passed to
             `images`).
@@ -92,14 +102,27 @@ def image_select(
 
     # Encode local images/numpy arrays/PIL images to base64.
     encoded_images = []
-    for img in images:
-        if isinstance(img, (np.ndarray, Image.Image)):  # numpy array or PIL image
-            encoded_images.append(_encode_numpy(np.asarray(img)))
-        elif os.path.exists(img):  # local file
-            encoded_images.append(_encode_file(img))
-        else:  # url, use directly
-            encoded_images.append(img)
+    for idx, img in enumerate(images):
+        if bboxes:
+            if labels is None:
+                if classes is None:
+                    raise ValueError(
+                        "Labels or classes must be passed if bounding boxes are passed."
+                    )
+                labels = classes
+            img = cv2.imread(img)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            ann = Annotator(img)
+            for box, label, cls in zip(bboxes[idx], labels[idx], classes[idx]):
+                ann.box_label(box, label, color=colors(cls, True))
+            img = ann.result()
 
+        if isinstance(img, (np.ndarray, Image.Image)):  # numpy array or PIL image
+            img = _encode_numpy(np.asarray(img))
+        elif os.path.exists(img):  # local file
+            img = _encode_file(img)
+        encoded_images.append(img)
+    
     # Pass everything to the frontend.
     component_values = _component_func(
         label=label,

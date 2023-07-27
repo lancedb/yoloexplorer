@@ -254,11 +254,20 @@ def layout():
                 selected_imgs = []
                 if total_imgs:
                     imgs_displayed = imgs[start_idx : start_idx + num]
+                    label_args = {"bboxes": None, "labels": None, "classes": None}
+                    if st.session_state.get(f"DISPLAY_LABELS_{data}"):
+                        table = st.session_state[f"EXPLORER_{data}"].table
+                        df = table.to_pandas()
+                        label_args["bboxes"] = df["bboxes"].to_list()
+                        label_args["labels"] = df["labels"].to_list()
+                        label_args["classes"] = df["cls"].to_list()
+
                     selected_imgs = image_select(
                         f"Total samples: {total_imgs}",
                         images=imgs_displayed,
                         use_container_width=False,
                         indices=[i for i in range(num)] if select_all else None,
+                        **label_args,
                     )
                     if st.session_state.get(f"STAGED_IMGS"):
                         rerender_button(data)
@@ -268,7 +277,8 @@ def layout():
                 total_staged_imgs = set(st.session_state["STAGED_IMGS"])
                 total_staged_imgs.update(selected_imgs)
 
-                display_labels = st.checkbox("Labels", value=False, key=widget_key("labels", data))
+                st.checkbox("Labels", value=False, key=widget_key("labels", data), on_change=update_state, args=(f"DISPLAY_LABELS_{data}",not st.session_state.get(f"DISPLAY_LABELS_{data}")))
+
                 selected_options_form(data, selected_imgs, selected_staged_imgs, total_staged_imgs)
                 if data == st.session_state["PRIMARY_DATASET"]:
                     persist_reset_form()
