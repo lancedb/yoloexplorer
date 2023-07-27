@@ -2,9 +2,9 @@ import json
 import subprocess
 
 import streamlit as st
-from streamlit_dash import image_select
 from yoloexplorer import config
 from yoloexplorer.frontend.states import init_states, update_state, widget_key
+from yoloexplorer.frontend.streamlit_dash import image_select
 
 
 @st.cache_data

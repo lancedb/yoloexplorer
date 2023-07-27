@@ -80,7 +80,7 @@ class Explorer:
         self._sim_index = None
         self.version = None
 
-        self.table_name = data
+        self.table_name = Path(data).name
         self.temp_table_name = self.table_name + "_temp"
 
         # copy table to project if table is provided
@@ -426,7 +426,7 @@ class Explorer:
         yaml.dump(new_dataset_info, open(path / datafile_name, "w"))  # update dataset.yaml file
 
         # TODO: not sure if this should be called data_final to prevent overwriting the original data?
-        self.table = self._create_table(self.table_name, data=self.table.to_arrow(), mode="overwrite")
+        self.table = self._create_table(datafile_name, data=self.table.to_arrow(), mode="overwrite")
         db.drop_table(self.temp_table_name)
 
         LOGGER.info("Changes persisted to the dataset.")
