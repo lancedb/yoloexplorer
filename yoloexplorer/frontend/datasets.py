@@ -277,7 +277,13 @@ def layout():
                 total_staged_imgs = set(st.session_state["STAGED_IMGS"])
                 total_staged_imgs.update(selected_imgs)
 
-                st.checkbox("Labels", value=False, key=widget_key("labels", data), on_change=update_state, args=(f"DISPLAY_LABELS_{data}",not st.session_state.get(f"DISPLAY_LABELS_{data}")))
+                st.checkbox(
+                    "Labels",
+                    value=False,
+                    key=widget_key("labels", data),
+                    on_change=update_state,
+                    args=(f"DISPLAY_LABELS_{data}", not st.session_state.get(f"DISPLAY_LABELS_{data}")),
+                )
 
                 selected_options_form(data, selected_imgs, selected_staged_imgs, total_staged_imgs)
                 if data == st.session_state["PRIMARY_DATASET"]:
