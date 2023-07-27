@@ -482,7 +482,7 @@ class Explorer:
         success_log = (
             f'{colorstr("LanceDB: ") }New dataset created successfully! Run the following command to train a model:'
         )
-        train_cmd = f"yolo train {self.project} {self.model} {data_path} --epochs 10"
+        train_cmd = f"yolo train  model={self.model} data={data_path} epochs=10"
         success_log = success_log + "\n" + train_cmd
         LOGGER.info(success_log)
 

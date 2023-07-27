@@ -234,7 +234,7 @@ def layout():
             imgs = st.session_state[f"IMGS_{data}"]
             total_imgs = len(imgs)
             with col1:
-                subcol1, subcol2, subcol3 = st.columns([0.2, 0.2, 0.6])
+                subcol1, subcol2, subcol3, subcol4 = st.columns([0.2, 0.2, 0.3, 0.3])
                 with subcol1:
                     num = st.number_input(
                         "Max Images Displayed",
@@ -249,15 +249,21 @@ def layout():
                     )
                 with subcol3:
                     select_all = st.checkbox("Select All", value=False, key=widget_key("select_all", data))
+                with subcol4:
+                    labels = st.checkbox(
+                        "Labels",
+                        value=False,
+                        key=widget_key("labels", data),
+                    )
 
                 query_form(data)
                 selected_imgs = []
                 if total_imgs:
                     imgs_displayed = imgs[start_idx : start_idx + num]
                     label_args = {"bboxes": None, "labels": None, "classes": None}
-                    if st.session_state.get(f"DISPLAY_LABELS_{data}"):
+                    if labels:
                         table = st.session_state[f"EXPLORER_{data}"].table
-                        df = table.to_pandas()
+                        df = table.to_pandas().set_index("path").loc[imgs_displayed]
                         label_args["bboxes"] = df["bboxes"].to_list()
                         label_args["labels"] = df["labels"].to_list()
                         label_args["classes"] = df["cls"].to_list()
@@ -276,14 +282,6 @@ def layout():
                 similarity_form(selected_imgs, selected_staged_imgs, data)
                 total_staged_imgs = set(st.session_state["STAGED_IMGS"])
                 total_staged_imgs.update(selected_imgs)
-
-                st.checkbox(
-                    "Labels",
-                    value=False,
-                    key=widget_key("labels", data),
-                    on_change=update_state,
-                    args=(f"DISPLAY_LABELS_{data}", not st.session_state.get(f"DISPLAY_LABELS_{data}")),
-                )
 
                 selected_options_form(data, selected_imgs, selected_staged_imgs, total_staged_imgs)
                 if data == st.session_state["PRIMARY_DATASET"]:

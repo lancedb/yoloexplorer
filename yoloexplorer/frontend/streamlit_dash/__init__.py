@@ -37,7 +37,7 @@ def _encode_numpy(img):
 
 
 def image_select(
-    label: str,
+    title: str,
     images: list,
     captions: list = None,
     indices: list = None,
@@ -52,7 +52,7 @@ def image_select(
     """Shows several images and returns the image selected by the user.
 
     Args:
-        label (str): The label shown above the images.
+        title (str): The label shown above the images.
         images (list): The images to show. Allowed image formats are paths to local
             files, URLs, PIL images, and numpy arrays.
         captions (list of str): The captions to show below the images. Defaults to
@@ -118,7 +118,7 @@ def image_select(
 
     # Pass everything to the frontend.
     component_values = _component_func(
-        label=label,
+        label=title,
         images=encoded_images,
         captions=captions,
         indices=indices,
