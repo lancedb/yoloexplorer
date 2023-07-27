@@ -11,7 +11,9 @@ from PIL import Image
 _RELEASE = True
 
 if not _RELEASE:
-    _component_func = components.declare_component("image_select", url="http://localhost:3001")
+    _component_func = components.declare_component(
+        "image_select", url="http://localhost:3001"
+    )
 else:
     path = (Path(__file__).parent / "frontend" / "build").resolve()
     _component_func = components.declare_component("image_select", path=path)
@@ -78,11 +80,14 @@ def image_select(
     if isinstance(indices, int):
         indices = [indices]
     if not isinstance(indices, list):
-        raise ValueError(f"`indices` must be a list of integers but it is {type(indices)}.")
+        raise ValueError(
+            f"`indices` must be a list of integers but it is {type(indices)}."
+        )
     for i, index in enumerate(indices):
         if index >= len(images):
             raise ValueError(
-                f"Image index at {i} must be smaller than the number of images ({len(images)}) " f"but it is {index}."
+                f"Image index at {i} must be smaller than the number of images ({len(images)}) "
+                f"but it is {index}."
             )
 
     # Encode local images/numpy arrays/PIL images to base64.
@@ -103,7 +108,7 @@ def image_select(
         indices=indices,
         use_container_width=use_container_width,
         key=key,
-        default=indices,
+        default=indices
     )
 
     # The frontend component returns the index of the selected image but we want to
@@ -113,4 +118,7 @@ def image_select(
     elif return_value == "index":
         return component_values
     else:
-        raise ValueError("`return_value` must be either 'original' or 'index' " f"but is '{return_value}'.")
+        raise ValueError(
+            "`return_value` must be either 'original' or 'index' "
+            f"but is '{return_value}'."
+        )
