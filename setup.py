@@ -33,6 +33,6 @@ setup(
     author="dev@lance",
     author_email="contact@lancedb.com",
     packages=find_packages(),  # required
-    package_data={"yoloexplorer":["frontend/streamlit_dash/frontend/**"]},
+    package_data={"yoloexplorer": ["frontend/streamlit_dash/frontend/**"]},
     include_package_data=True,
 )
