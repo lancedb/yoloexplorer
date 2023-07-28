@@ -19,7 +19,7 @@ REQUIREMENTS = [
 
 
 def get_version():
-    return "0.0.1.dev1"
+    return "0.0.1.dev2"
 
 
 setup(
