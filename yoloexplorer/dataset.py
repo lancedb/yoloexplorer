@@ -91,12 +91,13 @@ class SupervisionDetectionDataset(Dataset):
         img = self.ds.images[image_name]
         detections = self.ds.annotations[image_name]
         batch = {}
-        batch["im_file"] = img
+        batch["im_file"] = image_name
+        batch["img"] = torch.from_numpy(img)
         batch["ori_shape"] = img.shape[:2]
         batch["resized_shape"] = img.shape[:2]
         batch["bboxes"] = torch.from_numpy(detections.xyxy)
         batch["cls"] = torch.from_numpy(detections.class_id)
-        batch["path"] = image_name
+        batch["ratio_pad"] = (1.0, 1.0)
         return batch
 
     def load_image(self, i):

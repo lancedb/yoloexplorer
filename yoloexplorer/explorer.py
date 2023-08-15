@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 from collections import defaultdict
 import math
@@ -103,15 +104,18 @@ class Explorer:
         trainset = trainset if isinstance(trainset, list) else [trainset]
         self.trainset = trainset
         self.verbose = verbose
-        datasets = []
-        for train_data in trainset:
-            _dataset = sv.DetectionDataset.from_yolo(images_directory_path=train_data,
-                                                       annotations_directory_path=get_label_directory(train_data),
+        # datasets = []
+        # for train_data in trainset:
+        #     _dataset = sv.DetectionDataset.from_yolo(images_directory_path=train_data,
+        #                                                annotations_directory_path=get_label_directory(train_data),
+        #                                                data_yaml_path=self.data)
+        #     datasets.append(_dataset)
+        # # ds = sv.DetectionDataset.merge(dataset_list=datasets)
+
+        ds = sv.DetectionDataset.from_yolo(images_directory_path=self.trainset[0],
+                                                       annotations_directory_path=get_label_directory(self.trainset[0]),
                                                        data_yaml_path=self.data)
-            datasets.append(_dataset)
-        ds = sv.DetectionDataset.merge(dataset_list=datasets)
         dataset = SupervisionDetectionDataset(ds=ds)
-        # dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
         batch_size = dataset.ni   # TODO: fix this hardcoding
 
         db = self._connect()
@@ -127,24 +131,17 @@ class Explorer:
 
         table_data = defaultdict(list)
 
-        # for idx, image_name in enumerate(dataset.images.keys()):
-        #     batch = {}
-        #     detections = dataset.annotations.get(image_name, sv.Detections.empty())
-        #     batch["id"] = idx
-        #     batch["cls"] = detections.class_id.flatten().astype(int).tolist()
-        #     batch["bboxes"] = detections.xyxy.tolist()
-        #     batch["path"] = image_name
-        #     batch["im_file"] = dataset.images.get(image_name)
-        #     batch["labels"] = [self.dataset_info["names"][i] for i in detections.class_id]
-
         for idx, batch in enumerate(dataset):
-            print(batch.keys())
+
             batch["id"] = idx
             batch["cls"] = batch["cls"].flatten().int().tolist()
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
             batch["bboxes"] = [box for box, _ in box_cls_pair]
             batch["cls"] = [cls for _, cls in box_cls_pair]
             batch["labels"] = [self.dataset_info["names"][i] for i in batch["cls"]]
+            batch["path"] = os.path.join(self.trainset[0], batch["im_file"])
+
+
             # batch["cls"] = batch["cls"].tolist()
             keys = (key for key in SCHEMA if key in batch)
             for key in keys:
@@ -153,7 +150,7 @@ class Explorer:
                     val = val.tolist()
                 table_data[key].append(val)
 
-            table_data["img"].append(encode(batch["im_file"])) if store_imgs else None
+            table_data["img"].append(encode(batch["img"])) if store_imgs else None
 
             if len(table_data[key]) == batch_size or idx == dataset.ni - 1:
                 df = pd.DataFrame(table_data)
@@ -246,6 +243,7 @@ class Explorer:
         resized_images = []
         df = self.sql(query) if query else self.table.to_pandas().iloc[ids]
         for _, row in df.iterrows():
+            print(row["path"])
             img = cv2.imread(row["path"])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             if labels:
