@@ -19,8 +19,9 @@ import lancedb
 import pyarrow as pa
 from lancedb.embeddings import with_embeddings
 from sklearn.decomposition import PCA
+import supervision as sv
 
-from yoloexplorer.dataset import get_dataset_info, Dataset
+from yoloexplorer.dataset import get_dataset_info, Dataset, get_label_directory, SupervisionDetectionDataset
 from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
 from yoloexplorer.frontend import launch
 from yoloexplorer.config import TEMP_CONFIG_PATH
@@ -102,9 +103,17 @@ class Explorer:
         trainset = trainset if isinstance(trainset, list) else [trainset]
         self.trainset = trainset
         self.verbose = verbose
+        datasets = []
+        for train_data in trainset:
+            _dataset = sv.DetectionDataset.from_yolo(images_directory_path=train_data,
+                                                       annotations_directory_path=get_label_directory(train_data),
+                                                       data_yaml_path=self.data)
+            datasets.append(_dataset)
+        ds = sv.DetectionDataset.merge(dataset_list=datasets)
+        dataset = SupervisionDetectionDataset(ds=ds)
+        # dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
+        batch_size = dataset.ni   # TODO: fix this hardcoding
 
-        dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
-        batch_size = dataset.ni  # TODO: fix this hardcoding
         db = self._connect()
         if not force and self.table_name in db.table_names():
             LOGGER.info("LanceDB embedding space already exists. Attempting to reuse it. Use force=True to overwrite.")
@@ -117,14 +126,25 @@ class Explorer:
                 LOGGER.info("Table length does not match the number of images in the dataset. Building embeddings...")
 
         table_data = defaultdict(list)
+
+        # for idx, image_name in enumerate(dataset.images.keys()):
+        #     batch = {}
+        #     detections = dataset.annotations.get(image_name, sv.Detections.empty())
+        #     batch["id"] = idx
+        #     batch["cls"] = detections.class_id.flatten().astype(int).tolist()
+        #     batch["bboxes"] = detections.xyxy.tolist()
+        #     batch["path"] = image_name
+        #     batch["im_file"] = dataset.images.get(image_name)
+        #     batch["labels"] = [self.dataset_info["names"][i] for i in detections.class_id]
+
         for idx, batch in enumerate(dataset):
+            print(batch.keys())
             batch["id"] = idx
             batch["cls"] = batch["cls"].flatten().int().tolist()
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
             batch["bboxes"] = [box for box, _ in box_cls_pair]
             batch["cls"] = [cls for _, cls in box_cls_pair]
             batch["labels"] = [self.dataset_info["names"][i] for i in batch["cls"]]
-            batch["path"] = batch["im_file"]
             # batch["cls"] = batch["cls"].tolist()
             keys = (key for key in SCHEMA if key in batch)
             for key in keys:
