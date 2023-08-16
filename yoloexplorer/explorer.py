@@ -104,17 +104,16 @@ class Explorer:
         trainset = trainset if isinstance(trainset, list) else [trainset]
         self.trainset = trainset
         self.verbose = verbose
-        # datasets = []
-        # for train_data in trainset:
-        #     _dataset = sv.DetectionDataset.from_yolo(images_directory_path=train_data,
-        #                                                annotations_directory_path=get_label_directory(train_data),
-        #                                                data_yaml_path=self.data)
-        #     datasets.append(_dataset)
-        # # ds = sv.DetectionDataset.merge(dataset_list=datasets)
 
-        ds = sv.DetectionDataset.from_yolo(images_directory_path=self.trainset[0],
-                                                       annotations_directory_path=get_label_directory(self.trainset[0]),
+        # TODO: move to supervision class
+        datasets = []
+        for train_data in trainset:
+            _dataset = sv.DetectionDataset.from_yolo(images_directory_path=train_data,
+                                                       annotations_directory_path=get_label_directory(train_data),
                                                        data_yaml_path=self.data)
+            datasets.append(_dataset)
+
+        ds = sv.DetectionDataset.merge(dataset_list=datasets)
         dataset = SupervisionDetectionDataset(ds=ds)
         batch_size = dataset.ni   # TODO: fix this hardcoding
 
@@ -138,7 +137,7 @@ class Explorer:
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
             batch["bboxes"] = [box for box, _ in box_cls_pair]
             batch["cls"] = [cls for _, cls in box_cls_pair]
-            batch["labels"] = [self.dataset_info["names"][i] for i in batch["cls"]]
+            batch["labels"] = [ds.classes[i] for i in batch["cls"]]
             batch["path"] = os.path.join(self.trainset[0], batch["im_file"])
 
 
@@ -243,7 +242,6 @@ class Explorer:
         resized_images = []
         df = self.sql(query) if query else self.table.to_pandas().iloc[ids]
         for _, row in df.iterrows():
-            print(row["path"])
             img = cv2.imread(row["path"])
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             if labels:
