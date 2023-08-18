@@ -128,9 +128,11 @@ class Explorer:
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
             batch["bboxes"] = [box for box, _ in box_cls_pair]
             batch["cls"] = [cls for _, cls in box_cls_pair]
-            batch["labels"] = [dataset.classes[i] for i in batch["cls"]]
-            batch["path"] = batch["im_file"]
+            batch["labels"] = [ds.classes[i] for i in batch["cls"]]
+            batch["path"] = os.path.join(self.trainset[0], batch["im_file"])
 
+
+            # batch["cls"] = batch["cls"].tolist()
             keys = (key for key in SCHEMA if key in batch)
             for key in keys:
                 val = batch[key]
