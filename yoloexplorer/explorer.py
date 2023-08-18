@@ -105,16 +105,7 @@ class Explorer:
         self.trainset = trainset
         self.verbose = verbose
 
-        # TODO: move to supervision class
-        datasets = []
-        for train_data in trainset:
-            _dataset = sv.DetectionDataset.from_yolo(images_directory_path=train_data,
-                                                       annotations_directory_path=get_label_directory(train_data),
-                                                       data_yaml_path=self.data)
-            datasets.append(_dataset)
-
-        ds = sv.DetectionDataset.merge(dataset_list=datasets)
-        dataset = SupervisionDetectionDataset(ds=ds)
+        dataset = SupervisionDetectionDataset(data=self.data, dataset_info=self.dataset_info)
         batch_size = dataset.ni   # TODO: fix this hardcoding
 
         db = self._connect()
@@ -137,11 +128,9 @@ class Explorer:
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
             batch["bboxes"] = [box for box, _ in box_cls_pair]
             batch["cls"] = [cls for _, cls in box_cls_pair]
-            batch["labels"] = [ds.classes[i] for i in batch["cls"]]
-            batch["path"] = os.path.join(self.trainset[0], batch["im_file"])
+            batch["labels"] = [dataset.classes[i] for i in batch["cls"]]
+            batch["path"] = batch["im_file"]
 
-
-            # batch["cls"] = batch["cls"].tolist()
             keys = (key for key in SCHEMA if key in batch)
             for key in keys:
                 val = batch[key]

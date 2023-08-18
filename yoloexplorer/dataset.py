@@ -74,9 +74,21 @@ class Dataset(YOLODataset):
 class SupervisionDetectionDataset(Dataset):
     """Face Landmarks dataset."""
 
-    def __init__(self, ds: sv.DetectionDataset):
-        self.ds = ds
-        self.ni = len(ds)
+    def __init__(self, dataset_info, data="coco128.yaml", task="detect"):
+
+        trainsets = dataset_info["train"]
+        trainsets = trainsets if isinstance(trainsets, list) else [trainsets]
+
+        datasets = []
+        for trainset in trainsets:
+            _dataset = sv.DetectionDataset.from_yolo(images_directory_path=trainset,
+                                                     annotations_directory_path=get_label_directory(trainset),
+                                                     data_yaml_path=data)
+            datasets.append(_dataset)
+
+        self.ds = sv.DetectionDataset.merge(dataset_list=datasets)
+        self.classes = self.ds.classes
+        self.ni = len(self.ds)
         self.indices = range(len(self.ds.images.keys()))
 
     def __len__(self):
@@ -94,10 +106,9 @@ class SupervisionDetectionDataset(Dataset):
         batch["im_file"] = image_name
         batch["img"] = torch.from_numpy(img)
         batch["ori_shape"] = img.shape[:2]
-        batch["resized_shape"] = img.shape[:2]
         batch["bboxes"] = torch.from_numpy(detections.xyxy)
         batch["cls"] = torch.from_numpy(detections.class_id)
-        batch["ratio_pad"] = (1.0, 1.0)
+        batch["path"] = image_name
         return batch
 
     def load_image(self, i):
