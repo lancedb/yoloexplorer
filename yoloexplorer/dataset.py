@@ -75,16 +75,22 @@ class SupervisionDetectionDataset(Dataset):
     """Face Landmarks dataset."""
 
     def __init__(self, dataset_info, data="coco128.yaml", task="detect"):
+
+        load_masks = True if task == "segment" else False
         trainsets = dataset_info["train"]
         trainsets = trainsets if isinstance(trainsets, list) else [trainsets]
 
         datasets = []
         for trainset in trainsets:
-            _dataset = sv.DetectionDataset.from_yolo(
-                images_directory_path=trainset,
-                annotations_directory_path=get_label_directory(trainset),
-                data_yaml_path=data,
-            )
+            if task == "detect" or task == "segment":
+                _dataset = sv.DetectionDataset.from_yolo(
+                    images_directory_path=trainset,
+                    annotations_directory_path=get_label_directory(trainset),
+                    data_yaml_path=data,
+                    force_masks=load_masks
+                )
+            elif task == "classify":
+                pass
             datasets.append(_dataset)
 
         self.ds = sv.DetectionDataset.merge(dataset_list=datasets)
