@@ -106,7 +106,7 @@ class Explorer:
         self.verbose = verbose
 
         dataset = SupervisionDetectionDataset(data=self.data, dataset_info=self.dataset_info)
-        batch_size = dataset.ni   # TODO: fix this hardcoding
+        batch_size = dataset.ni  # TODO: fix this hardcoding
 
         db = self._connect()
         if not force and self.table_name in db.table_names():
@@ -122,7 +122,6 @@ class Explorer:
         table_data = defaultdict(list)
 
         for idx, batch in enumerate(dataset):
-
             batch["id"] = idx
             batch["cls"] = batch["cls"].flatten().int().tolist()
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
@@ -130,7 +129,6 @@ class Explorer:
             batch["cls"] = [cls for _, cls in box_cls_pair]
             batch["labels"] = [ds.classes[i] for i in batch["cls"]]
             batch["path"] = os.path.join(self.trainset[0], batch["im_file"])
-
 
             # batch["cls"] = batch["cls"].tolist()
             keys = (key for key in SCHEMA if key in batch)
