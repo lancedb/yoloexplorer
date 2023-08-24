@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 from collections import defaultdict
 import math
@@ -19,8 +20,9 @@ import lancedb
 import pyarrow as pa
 from lancedb.embeddings import with_embeddings
 from sklearn.decomposition import PCA
+import supervision as sv
 
-from yoloexplorer.dataset import get_dataset_info, Dataset
+from yoloexplorer.dataset import get_dataset_info, Dataset, get_label_directory, SupervisionDetectionDataset
 from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
 from yoloexplorer.frontend import launch
 from yoloexplorer.config import TEMP_CONFIG_PATH
@@ -103,8 +105,9 @@ class Explorer:
         self.trainset = trainset
         self.verbose = verbose
 
-        dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
+        dataset = SupervisionDetectionDataset(data=self.data, dataset_info=self.dataset_info)
         batch_size = dataset.ni  # TODO: fix this hardcoding
+
         db = self._connect()
         if not force and self.table_name in db.table_names():
             LOGGER.info("LanceDB embedding space already exists. Attempting to reuse it. Use force=True to overwrite.")
@@ -117,14 +120,16 @@ class Explorer:
                 LOGGER.info("Table length does not match the number of images in the dataset. Building embeddings...")
 
         table_data = defaultdict(list)
+
         for idx, batch in enumerate(dataset):
             batch["id"] = idx
             batch["cls"] = batch["cls"].flatten().int().tolist()
             box_cls_pair = sorted(zip(batch["bboxes"].tolist(), batch["cls"]), key=lambda x: x[1])
             batch["bboxes"] = [box for box, _ in box_cls_pair]
             batch["cls"] = [cls for _, cls in box_cls_pair]
-            batch["labels"] = [self.dataset_info["names"][i] for i in batch["cls"]]
-            batch["path"] = batch["im_file"]
+            batch["labels"] = [dataset.classes[i] for i in batch["cls"]]
+            batch["path"] = os.path.join(self.trainset[0], batch["im_file"])
+
             # batch["cls"] = batch["cls"].tolist()
             keys = (key for key in SCHEMA if key in batch)
             for key in keys:
@@ -133,7 +138,7 @@ class Explorer:
                     val = val.tolist()
                 table_data[key].append(val)
 
-            table_data["img"].append(encode(batch["im_file"])) if store_imgs else None
+            table_data["img"].append(encode(batch["img"])) if store_imgs else None
 
             if len(table_data[key]) == batch_size or idx == dataset.ni - 1:
                 df = pd.DataFrame(table_data)

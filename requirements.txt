@@ -1,6 +1,7 @@
 lancedb
 duckdb
 scikit-learn
+supervision@git+https://github.com/roboflow/supervision.git@develop
 ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings
 # streamlit # To run dashboard
 # streamlit-image-select # For image gallery

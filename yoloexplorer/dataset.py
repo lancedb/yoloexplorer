@@ -1,17 +1,25 @@
 import os
 import cv2
 import numpy as np
+import torch
+import supervision as sv
 
 from ultralytics.yolo.data.dataset import YOLODataset
 from ultralytics.yolo.data.augment import Format
 from ultralytics.yolo.data.utils import check_det_dataset
+from ultralytics.yolo.utils import yaml_save
 
 
 def get_dataset_info(data="coco128.yaml", task="detect"):
     # TODO: handle other tasks
+    filepath = data
     data = check_det_dataset(data)
-
+    yaml_save(data=data, file=filepath)
     return data
+
+
+def get_label_directory(image_direcyory):
+    return image_direcyory.replace("images", "labels")
 
 
 def get_relative_path(path1, path2):
@@ -61,3 +69,56 @@ class Dataset(YOLODataset):
             mask_overlap=hyp.overlap_mask,
         )
         return transforms
+
+
+class SupervisionDetectionDataset(Dataset):
+    """Face Landmarks dataset."""
+
+    def __init__(self, dataset_info, data="coco128.yaml", task="detect"):
+        load_masks = True if task == "segment" else False
+        trainsets = dataset_info["train"]
+        trainsets = trainsets if isinstance(trainsets, list) else [trainsets]
+
+        datasets = []
+        for trainset in trainsets:
+            if task == "detect" or task == "segment":
+                _dataset = sv.DetectionDataset.from_yolo(
+                    images_directory_path=trainset,
+                    annotations_directory_path=get_label_directory(trainset),
+                    data_yaml_path=data,
+                    force_masks=load_masks,
+                )
+            elif task == "classify":
+                pass
+            datasets.append(_dataset)
+
+        self.ds = sv.DetectionDataset.merge(dataset_list=datasets)
+        self.classes = self.ds.classes
+        self.ni = len(self.ds)
+        self.indices = range(len(self.ds.images.keys()))
+
+    def __len__(self):
+        return len(self.ds.images.keys())
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()[0]
+
+        index = self.indices[idx]  # linear, shuffled, or image_weights
+        image_name = list(self.ds.images.keys())[index]
+        img = self.ds.images[image_name]
+        detections = self.ds.annotations[image_name]
+        batch = {}
+        batch["im_file"] = image_name
+        batch["img"] = torch.from_numpy(img)
+        batch["ori_shape"] = img.shape[:2]
+        batch["bboxes"] = torch.from_numpy(detections.xyxy)
+        batch["cls"] = torch.from_numpy(detections.class_id)
+        batch["path"] = image_name
+        return batch
+
+    def load_image(self, i):
+        """Loads 1 image from dataset index 'i', returns (im, resized hw)."""
+        im = self.ds.images[i]
+        h0, w0 = im.shape[:2]  # orig hw
+        return im, (h0, w0), im.shape[:2]
