@@ -94,9 +94,11 @@ class Explorer:
         if data:
             self.dataset_info = get_dataset_info(self.data)
 
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),])
-
+        self.transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+            ]
+        )
 
     def build_embeddings(self, batch_size=1000, verbose=False, force=False, store_imgs=False):
         """
@@ -207,10 +209,12 @@ class Explorer:
 
         if embeddings is None:
             if isinstance(img, list):
-                embeddings = np.array([self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy() for i in img])
+                embeddings = np.array(
+                    [self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy() for i in img]
+                )
             else:
                 embeddings = self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy()
-                
+
         if len(embeddings.shape) > 1:
             embeddings = np.mean(embeddings, axis=0)
 
@@ -546,7 +550,7 @@ class Explorer:
         for img in tqdm(imgs):
             encod_img = self._image_encode(img)
             embeddings.append(self.predictor(encod_img).squeeze().cpu().detach().numpy())
-        
+
         return embeddings
 
     def _setup_predictor(self, model, device=""):
