@@ -25,6 +25,11 @@ from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
 from yoloexplorer.frontend import launch
 from yoloexplorer.config import TEMP_CONFIG_PATH
 
+import torch
+import torchvision.models as models
+from torchvision import transforms
+from PIL import Image
+
 SCHEMA = [
     "id",
     # "img", # Make this optional; disabled by default. Not feasible unless we can have row_id/primary key to index
@@ -58,7 +63,7 @@ class Explorer:
     Dataset explorer
     """
 
-    def __init__(self, data, model="yolov8n.pt", device="", project="run") -> None:
+    def __init__(self, data, device="", model="resnet18", project="run") -> None:
         """
         Args:
             data (str, optional): path to dataset file
@@ -88,6 +93,10 @@ class Explorer:
             self.predictor = self._setup_predictor(model, device)
         if data:
             self.dataset_info = get_dataset_info(self.data)
+
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),])
+
 
     def build_embeddings(self, batch_size=1000, verbose=False, force=False, store_imgs=False):
         """
@@ -198,9 +207,10 @@ class Explorer:
 
         if embeddings is None:
             if isinstance(img, list):
-                embeddings = np.array([self.predictor.embed(i).squeeze().cpu().numpy() for i in img])
+                embeddings = np.array([self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy() for i in img])
             else:
-                embeddings = self.predictor.embed(img).squeeze().cpu().numpy()
+                embeddings = self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy()
+                
         if len(embeddings.shape) > 1:
             embeddings = np.mean(embeddings, axis=0)
 
@@ -525,18 +535,25 @@ class Explorer:
         table = db.open_table(name)
         return self._create_table(self.table_name, data=table.to_arrow(), mode="overwrite")
 
+    def _image_encode(self, img):
+        image = Image.open(img)
+        img_tensor = self.transform(image)
+        trans_img = img_tensor.unsqueeze(0)
+        return trans_img
+
     def _embedding_func(self, imgs):
         embeddings = []
         for img in tqdm(imgs):
-            embeddings.append(self.predictor.embed(img, verbose=self.verbose).squeeze().cpu().numpy())
+            encod_img = self._image_encode(img)
+            embeddings.append(self.predictor(encod_img).squeeze().cpu().detach().numpy())
+        
         return embeddings
 
     def _setup_predictor(self, model, device=""):
-        model = YOLO(model)
-        predictor = YOLOEmbeddingsPredictor(overrides={"device": device})
-        predictor.setup_model(model.model)
-
-        return predictor
+        if model == "resnet18":
+            resnet = models.resnet18(pretrained=True)
+            predictor = torch.nn.Sequential(*list(resnet.children())[:-1])
+            return predictor
 
     def create_index(self):
         # TODO: create index
