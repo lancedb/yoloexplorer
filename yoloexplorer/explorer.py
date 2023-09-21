@@ -96,6 +96,7 @@ class Explorer:
 
         self.transform = transforms.Compose(
             [
+                transforms.Resize((224,224)),
                 transforms.ToTensor(),
             ]
         )
@@ -213,7 +214,7 @@ class Explorer:
                     [self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy() for i in img]
                 )
             else:
-                embeddings = self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy()
+                embeddings = self.predictor(self._image_encode(img)).squeeze().cpu().detach().numpy()
 
         if len(embeddings.shape) > 1:
             embeddings = np.mean(embeddings, axis=0)
@@ -541,6 +542,10 @@ class Explorer:
 
     def _image_encode(self, img):
         image = Image.open(img)
+        n_channels = np.array(image).ndim
+        if n_channels == 2:
+            image = image.convert(mode='RGB')
+            
         img_tensor = self.transform(image)
         trans_img = img_tensor.unsqueeze(0)
         return trans_img
@@ -550,7 +555,7 @@ class Explorer:
         for img in tqdm(imgs):
             encod_img = self._image_encode(img)
             embeddings.append(self.predictor(encod_img).squeeze().cpu().detach().numpy())
-
+            
         return embeddings
 
     def _setup_predictor(self, model, device=""):
