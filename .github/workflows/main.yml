@@ -26,6 +26,7 @@ jobs:
           pip install pytest
           pip install git+https://github.com/ultralytics/ultralytics.git@embeddings
           pip install -e .
+          pip install pandas==2.0.3
 
       - name: Test with pytest
         run: |
