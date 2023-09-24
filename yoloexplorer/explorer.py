@@ -301,7 +301,7 @@ class Explorer:
         for _, emb in enumerate(tqdm(embs)):
             df = self._search_table.search(emb).metric("cosine").limit(limit).to_df()
             if sim_thres is not None:
-                df = df.query(f"score >= {1.0 - sim_thres}")
+                df = df.query(f"_distance >= {1.0 - sim_thres}")
             for idx in df["id"][1:]:
                 self._sim_index[idx] += 1
         self._drop_table("reduced_embs") if reduce else None
