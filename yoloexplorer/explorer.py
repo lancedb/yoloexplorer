@@ -11,7 +11,6 @@ import numpy as np
 import yaml
 from tqdm import tqdm
 from typing import List
-from ultralytics import YOLO
 from ultralytics.yolo.utils import LOGGER, colorstr
 from ultralytics.yolo.utils.plotting import Annotator, colors
 from torch import Tensor
@@ -21,7 +20,6 @@ from lancedb.embeddings import with_embeddings
 from sklearn.decomposition import PCA
 
 from yoloexplorer.dataset import get_dataset_info, Dataset
-from yoloexplorer.yolo_predictor import YOLOEmbeddingsPredictor
 from yoloexplorer.frontend import launch
 from yoloexplorer.config import TEMP_CONFIG_PATH
 
@@ -29,6 +27,7 @@ import torch
 import torchvision.models as models
 from torchvision import transforms
 from PIL import Image
+import sys
 
 SCHEMA = [
     "id",
@@ -88,7 +87,8 @@ class Explorer:
         self.table_name = Path(data).name
         self.temp_table_name = self.table_name + "_temp"
 
-        # copy table to project if table is provided
+        self.model_arch_supported = ["resnet18", "resnet50", "efficientnet_b0", "efficientnet_v2_s", "googlenet", "mobilenet_v3_small"]
+        
         if model:
             self.predictor = self._setup_predictor(model, device)
         if data:
@@ -100,6 +100,8 @@ class Explorer:
                 transforms.ToTensor(),
             ]
         )
+        
+
 
     def build_embeddings(self, batch_size=1000, verbose=False, force=False, store_imgs=False):
         """
@@ -211,8 +213,7 @@ class Explorer:
         if embeddings is None:
             if isinstance(img, list):
                 embeddings = np.array(
-                    [self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy() for i in img]
-                )
+                    [self.predictor(self._image_encode(i)).squeeze().cpu().detach().numpy() for i in img])
             else:
                 embeddings = self.predictor(self._image_encode(img)).squeeze().cpu().detach().numpy()
 
@@ -544,6 +545,8 @@ class Explorer:
         image = Image.open(img)
         n_channels = np.array(image).ndim
         if n_channels == 2:
+            image = image.convert(mode='RGB')
+
             image = image.convert(mode="RGB")
 
         img_tensor = self.transform(image)
@@ -555,15 +558,22 @@ class Explorer:
         for img in tqdm(imgs):
             encod_img = self._image_encode(img)
             embeddings.append(self.predictor(encod_img).squeeze().cpu().detach().numpy())
-
+            
         return embeddings
 
-    def _setup_predictor(self, model, device=""):
-        if model == "resnet18":
-            resnet = models.resnet18(pretrained=True)
-            predictor = torch.nn.Sequential(*list(resnet.children())[:-1])
-            return predictor
 
+    def _setup_predictor(self, model_arch, device=""):
+        if model_arch in self.model_arch_supported:
+            load_model = getattr(models, model_arch)
+            model = load_model(pretrained=True)
+            predictor = torch.nn.Sequential(*list(model.children())[:-1])
+            return predictor
+        
+        else:
+            LOGGER.error(f"Supported for {model_arch} is not added yet")
+            sys.exit(1)
+
+        
     def create_index(self):
         # TODO: create index
         pass
