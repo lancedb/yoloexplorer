@@ -547,8 +547,6 @@ class Explorer:
         if n_channels == 2:
             image = image.convert(mode='RGB')
 
-            image = image.convert(mode="RGB")
-
         img_tensor = self.transform(image)
         trans_img = img_tensor.unsqueeze(0)
         return trans_img
