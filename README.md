@@ -12,7 +12,7 @@ Supports SQL filters, vector similarity search, native interface with Pandas and
 🌟 NEW: Supports GUI Dashboard, Pythonic and notebook workflows
 ### Dashboard Workflows
 <details open>
-<summary>Mutliple dataset support</summary>
+<summary>Multiple dataset support</summary>
 You can now explore multiple datasets, search across them, add/remove images across multiple datasets to enrich bad examples. Start training on new dataset within seconds.
   Here's an example of using VOC, coco128 and coco8 datasets together with VOC being the primary.
 <pre>
@@ -27,11 +27,33 @@ coco_exp.build_embeddings()
 
 exp.dash([coco_exp, coco8])
 #Automatic analysis coming soon with dash(..., analysis=True)
+
 </pre>
 
   ![ezgif com-optimize (3)](https://github.com/lancedb/yoloexplorer/assets/15766192/3422a536-138a-4fce-af2c-cef97f171aed)
 
 </details>
+
+
+<details open>
+<summary>Multiple model support</summary>
+
+You can now explore multiple pretrained models listed
+`"resnet18", "resnet50", "efficientnet_b0", "efficientnet_v2_s", "googlenet", "mobilenet_v3_small"` for extracting better features out of images to improve searching across multiple datasets.<pre>
+from yoloexplorer import Explorer
+
+exp = Explorer("coco128.yaml", model="resnet50")
+exp.build_embeddings()
+
+coco_exp = Explorer("coco128.yaml", model="mobilenet_v3_small")
+coco_exp.build_embeddings()
+
+#Use force=True as a parameter in build_embedding if embeddings already exists
+
+exp.dash([coco_exp, coco8])
+#Automatic analysis coming soon with dash(..., analysis=True)
+</details>
+
 <details open>
 <summary>Query using SQL and semantic search, View dataset as pandas DF and explore embeddings</summary>
 
