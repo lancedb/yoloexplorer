@@ -11,7 +11,7 @@ REQUIREMENTS = (PARENT / "requirements.txt").read_text(encoding="utf-8").splitli
 
 
 def get_version():
-    return "0.0.1.dev2"
+    return "0.0.1"
 
 
 setup(

@@ -72,6 +72,10 @@ Try an example colab <a href="https://colab.research.google.com/github/lancedb/y
 
 ### Installation
 ```
+pip install yoloexplorer
+```
+Install from source branch
+```
 pip install git+https://github.com/lancedb/yoloexplorer.git
 ```
 Pypi installation coming soon
