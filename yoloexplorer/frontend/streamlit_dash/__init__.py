@@ -9,7 +9,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
 
-from ultralytics.yolo.utils.plotting import Annotator, colors
+from ultralytics.utils.plotting import Annotator, colors
 
 _RELEASE = True
 

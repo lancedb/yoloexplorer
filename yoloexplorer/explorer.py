@@ -10,9 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 from tqdm import tqdm
-from typing import List
-from ultralytics.yolo.utils import LOGGER, colorstr
-from ultralytics.yolo.utils.plotting import Annotator, colors
+from ultralytics.utils import LOGGER, colorstr
+from ultralytics.utils.plotting import Annotator, colors
 from torch import Tensor
 import lancedb
 import pyarrow as pa

@@ -2,9 +2,9 @@ import os
 import cv2
 import numpy as np
 
-from ultralytics.yolo.data.dataset import YOLODataset
-from ultralytics.yolo.data.augment import Format
-from ultralytics.yolo.data.utils import check_det_dataset
+from ultralytics.data.dataset import YOLODataset
+from ultralytics.data.augment import Format
+from ultralytics.data.utils import check_det_dataset
 
 
 def get_dataset_info(data="coco128.yaml", task="detect"):

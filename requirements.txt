@@ -1,7 +1,7 @@
-ultralytics@git+https://github.com/ultralytics/ultralytics.git@embeddings
 lancedb
 duckdb
 scikit-learn
+streamlit
+plotly
+ultralytics
 pandas==2.0.3
-# streamlit # To run dashboard
-# streamlit-image-select # For image gallery
