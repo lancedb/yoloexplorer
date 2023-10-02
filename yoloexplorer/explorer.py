@@ -24,7 +24,7 @@ from yoloexplorer.config import TEMP_CONFIG_PATH
 
 import torch
 import torchvision.models as models
-from torchvision import transforms
+from torchvision import datasets, transforms
 from PIL import Image
 import sys
 
@@ -61,7 +61,7 @@ class Explorer:
     Dataset explorer
     """
 
-    def __init__(self, data, device="", model="resnet18", project="run") -> None:
+    def __init__(self, data, device="", model="resnet18", batch_size=64, project="run") -> None:
         """
         Args:
             data (str, optional): path to dataset file
@@ -74,6 +74,7 @@ class Explorer:
         self.table = None
         self.model = model
         self.device = device
+        self.batch_size = batch_size
         self.project = project
         self.dataset_info = None
         self.predictor = None
@@ -122,7 +123,7 @@ class Explorer:
         self.verbose = verbose
 
         dataset = Dataset(img_path=trainset, data=self.dataset_info, augment=False, cache=False)
-        batch_size = dataset.ni  # TODO: fix this hardcoding
+        batch_size = self.batch_size  # TODO: fix this hardcoding
         db = self._connect()
         if not force and self.table_name in db.table_names():
             LOGGER.info("LanceDB embedding space already exists. Attempting to reuse it. Use force=True to overwrite.")
@@ -150,14 +151,14 @@ class Explorer:
                 if isinstance(val, Tensor):
                     val = val.tolist()
                 table_data[key].append(val)
-
+            
             table_data["img"].append(encode(batch["im_file"])) if store_imgs else None
 
             if len(table_data[key]) == batch_size or idx == dataset.ni - 1:
                 df = pd.DataFrame(table_data)
                 df = with_embeddings(self._embedding_func, df, "path", batch_size=batch_size)
                 if self.table:
-                    self.table.add(table_data)
+                    self.table.add(df)
                 else:
                     self.table = self._create_table(self.table_name, data=df, mode="overwrite")
                 self.version = self.table.version
