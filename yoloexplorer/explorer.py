@@ -108,7 +108,7 @@ class Explorer:
             ]
         )
 
-    def build_embeddings(self, batch_size=1000, verbose=False, force=False, store_imgs=False):
+    def build_embeddings(self, verbose=False, force=False, store_imgs=False):
         """
         Builds the dataset in LanceDB table format
 
