@@ -151,7 +151,7 @@ class Explorer:
                 if isinstance(val, Tensor):
                     val = val.tolist()
                 table_data[key].append(val)
-            
+
             table_data["img"].append(encode(batch["im_file"])) if store_imgs else None
 
             if len(table_data[key]) == batch_size or idx == dataset.ni - 1:
